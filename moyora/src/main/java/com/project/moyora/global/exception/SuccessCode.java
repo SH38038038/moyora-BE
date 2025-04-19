@@ -39,7 +39,8 @@ public enum SuccessCode {
     USER_VERIFICATION_REJECTED(HttpStatus.OK, "사용자 인증이 거절되었습니다."),
 
     USER_VERIFICATION_STATUS_RETRIEVED(HttpStatus.OK, "신분증 조회 성공"),
-    CREATED(HttpStatus.CREATED, "인증 신청이 완료되었습니다.");
+    CREATED(HttpStatus.CREATED, "인증 신청이 완료되었습니다."),
+    VERIFICATION_DELETED(HttpStatus.OK, "요청 삭제 성공");
 
 
     private final HttpStatus httpStatus;

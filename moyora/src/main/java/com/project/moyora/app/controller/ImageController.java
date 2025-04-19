@@ -4,7 +4,10 @@ package com.project.moyora.app.controller;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.project.moyora.app.domain.User;
+import com.project.moyora.app.domain.Verification;
+import com.project.moyora.app.domain.VerificationStatus;
 import com.project.moyora.app.repository.UserRepository;
+import com.project.moyora.app.repository.VerificationRepository;
 import com.project.moyora.global.exception.ErrorCode;
 import com.project.moyora.global.exception.SuccessCode;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;
@@ -26,6 +29,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @Tag(name = "신분증 이미지 업로드", description = "로그인한 사용자의 신분증 이미지를 업로드하고 URL을 저장합니다.")
 @RestController
@@ -38,7 +42,7 @@ public class ImageController {
 
     private final RestTemplate restTemplate = new RestTemplate();
     private final UserRepository userRepository;
-
+    private final VerificationRepository verificationRepository;
     private final TokenService tokenService; // JWT로부터 사용자 추출
 
     @Operation(
@@ -82,7 +86,14 @@ public class ImageController {
 
             // 사용자 정보 업데이트
             user.setIdCardUrl(imageUrl);
+            user.setVerificationStatus(VerificationStatus.PENDING);
             userRepository.save(user);
+
+            Verification verification = new Verification();
+            verification.setUser(user);
+            verification.setStatus(VerificationStatus.PENDING);
+            verification.setCreatedAt(LocalDateTime.now());
+            verificationRepository.save(verification);
 
             return ApiResponseTemplete.success(SuccessCode.IMAGE_SERVER_SUCCESS, imageUrl);
 
