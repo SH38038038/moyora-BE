@@ -2,30 +2,15 @@ package com.project.moyora.app.controller;
 
 
 import com.project.moyora.app.Dto.VerificationResponse;
-import com.project.moyora.app.domain.GenderType;
-import com.project.moyora.app.domain.User;
-import com.project.moyora.app.domain.VerificationStatus;
-import com.project.moyora.app.repository.UserRepository;
 import com.project.moyora.app.service.VerificationService;
-import com.project.moyora.global.exception.ErrorCode;
 import com.project.moyora.global.exception.SuccessCode;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;
-import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
-import io.swagger.v3.oas.annotations.tags.Tag;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.saml2.Saml2RelyingPartyProperties;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+
+
 @RestController
 @RequestMapping("/api/verification")
 public class VerifiedController {

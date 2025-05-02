@@ -1,0 +1,163 @@
+package com.project.moyora.app.service;
+
+import com.project.moyora.app.Dto.BoardDto;
+import com.project.moyora.app.Dto.UserDto;
+import com.project.moyora.app.domain.ApplicationStatus;
+import com.project.moyora.app.domain.Board;
+import com.project.moyora.app.domain.User;
+import com.project.moyora.app.repository.BoardRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+
+@Service
+@RequiredArgsConstructor
+public class BoardService {
+
+    private final BoardRepository boardRepository;
+
+    public BoardDto createBoard(BoardDto dto, User currentUser) {
+        if (!Boolean.TRUE.equals(currentUser.getVerified())) {
+            throw new AccessDeniedException("인증된 사용자만 글을 작성할 수 있습니다.");
+        }
+
+        Board board = Board.builder()
+                .title(dto.getTitle())
+                .content(dto.getContent())
+                .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
+                .howMany(dto.getHowMany())
+                .participation(0)
+                .genderType(dto.getGenderType())
+                .Age(dto.getAge())
+                .interestTag(dto.getInterestTag())
+                .writer(currentUser)
+                .createdTime(LocalDateTime.now())
+                .updateTime(LocalDateTime.now())
+                .build();
+
+        return toDto(boardRepository.save(board));
+    }
+
+
+    public List<BoardDto> getAllBoards() {
+        return boardRepository.findAllByOrderByCreatedTimeDesc().stream()
+                .map(this::toDto)
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public BoardDto getBoardById(Long id) {
+        Board board = boardRepository.findBoardById(id);
+
+        // BoardDto 생성
+        return new BoardDto(
+                board.getId(),
+                board.getWriter().getName(),
+                board.getTitle(),
+                board.getGenderType(),
+                board.getAge(),
+                board.getStartDate(),
+                board.getEndDate(),
+                board.getInterestTag(),
+                board.getContent(),
+                board.getHowMany(),
+                board.getParticipation(),
+                board.getCreatedTime(),
+                board.getUpdateTime()
+        );
+    }
+
+    // BoardService 수정 예시
+    public BoardDto updateBoard(Long id, BoardDto dto, User currentUser) {
+        Board board = boardRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Board not found"));
+        checkBoardWriter(board, currentUser);  // 중복 제거
+
+        board.setTitle(dto.getTitle());
+        board.setContent(dto.getContent());
+        board.setStartDate(dto.getStartDate());
+        board.setEndDate(dto.getEndDate());
+        board.setHowMany(dto.getHowMany());
+        board.setGenderType(dto.getGenderType());
+        board.setInterestTag(dto.getInterestTag());
+
+        return toDto(boardRepository.save(board));
+    }
+
+    private void checkBoardWriter(Board board, User currentUser) {
+        if (!board.getWriter().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You are not the author of this post");
+        }
+    }
+
+
+    public void deleteBoard(Long id, User currentUser) throws AccessDeniedException{
+        Board board = boardRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Board not found"));
+        if (!board.getWriter().getId().equals(currentUser.getId())) {
+            throw new AccessDeniedException("You are not the author of this post");
+        }
+
+        boardRepository.delete(board);
+    }
+
+    private BoardDto toDto(Board board) {
+        return new BoardDto(
+                board.getId(),
+                board.getWriter().getName(),
+                board.getTitle(),
+                board.getGenderType(),
+                board.getAge(),
+                board.getStartDate(),
+                board.getEndDate(),
+                board.getInterestTag(),
+                board.getContent(),
+                board.getHowMany(),
+                board.getParticipation(),
+                board.getCreatedTime(),
+                board.getUpdateTime()
+        );
+    }
+
+    private Board toEntity(BoardDto dto) {
+        return Board.builder()
+                .title(dto.getTitle())
+                .content(dto.getContent())
+                .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
+                .howMany(dto.getHowMany())
+                .genderType(dto.getGenderType())
+                .interestTag(dto.getInterestTag())
+                .build();
+    }
+
+    private List<UserDto> mapUsersByStatus(Board board, ApplicationStatus status) {
+        // getApplications()가 null인 경우 빈 리스트 반환
+        if (board.getApplications() == null) {
+            return new ArrayList<>();
+        }
+
+        return board.getApplications().stream()
+                .filter(app -> app.getStatus() == status)
+                .map(app -> {
+                    User user = app.getApplicant();
+                    return UserDto.builder()
+                            .id(user.getId())
+                            .name(user.getName())
+                            .birth(user.getBirth())
+                            .gender(user.getGender())
+                            .verified(user.getVerified())
+                            .build();
+                })
+                .toList();
+    }
+
+}
