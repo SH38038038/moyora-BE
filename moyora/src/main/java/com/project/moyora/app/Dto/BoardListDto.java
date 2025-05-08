@@ -21,4 +21,6 @@ public class BoardListDto {
     private Integer howMany;
     private Integer participation;
     private String detailUrl;
+
+    private boolean liked;
 }

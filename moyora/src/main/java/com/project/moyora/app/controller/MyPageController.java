@@ -1,5 +1,6 @@
 package com.project.moyora.app.controller;
 
+import com.project.moyora.app.Dto.BoardListDto;
 import com.project.moyora.app.domain.Board;
 import com.project.moyora.app.domain.Like;
 import com.project.moyora.app.domain.User;
@@ -15,7 +16,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/mypage")
+@RequestMapping("/api")
 public class MyPageController {
 
     private final BoardRepository boardRepository;
@@ -29,7 +30,7 @@ public class MyPageController {
     }
 
     // 찜 추가
-    @PostMapping("/{userId}/liked/{boardId}")
+    @PostMapping("/boards/{boardId}/liked/{userId}")
     public ResponseEntity<String> likeBoard(@PathVariable Long userId, @PathVariable Long boardId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -53,7 +54,7 @@ public class MyPageController {
     }
 
     // 찜 취소
-    @DeleteMapping("/{userId}/liked/{boardId}")
+    @DeleteMapping("/boards/{boardId}/liked/{userId}")
     public ResponseEntity<String> removeLike(@PathVariable Long userId, @PathVariable Long boardId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
@@ -70,16 +71,31 @@ public class MyPageController {
     }
 
     // 찜한 게시물 조회
-    @GetMapping("/{userId}/liked")
-    public ResponseEntity<List<Board>> getLikedBoards(@PathVariable Long userId) {
+    @GetMapping("/mypage/{userId}/liked")
+    public ResponseEntity<List<BoardListDto>> getLikedBoards(@PathVariable Long userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        List<Like> likes = likeRepository.findByUser(user);
-        List<Board> likedBoards = likes.stream()
-                .map(Like::getBoard)
+        List<Like> likes = likeRepository.findByUserWithBoard(user);
+        List<BoardListDto> likedBoards = likes.stream()
+                .map(like -> {
+                    Board board = like.getBoard();
+                    return new BoardListDto(
+                            board.getTitle(),
+                            board.getStartDate(),
+                            board.getEndDate(),
+                            board.getMeetType(),
+                            board.getMeetDetail(),
+                            board.getInterestTag(),
+                            board.getHowMany(),
+                            board.getParticipation(),
+                            "/api/boards/" + board.getId(),  // detailUrl 구성 방식 예시,
+                            true
+                    );
+                })
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(likedBoards);
     }
+
 }

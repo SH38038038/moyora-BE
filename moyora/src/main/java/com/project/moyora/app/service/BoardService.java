@@ -3,11 +3,9 @@ package com.project.moyora.app.service;
 import com.project.moyora.app.Dto.BoardDto;
 import com.project.moyora.app.Dto.BoardListDto;
 import com.project.moyora.app.Dto.UserDto;
-import com.project.moyora.app.domain.ApplicationStatus;
-import com.project.moyora.app.domain.Board;
-import com.project.moyora.app.domain.GenderType;
-import com.project.moyora.app.domain.User;
+import com.project.moyora.app.domain.*;
 import com.project.moyora.app.repository.BoardRepository;
+import com.project.moyora.app.repository.LikeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -24,6 +24,7 @@ import java.util.List;
 public class BoardService {
 
     private final BoardRepository boardRepository;
+    private final LikeRepository likeRepository;
 
     public BoardDto createBoard(BoardDto dto, User currentUser) {
         if (!Boolean.TRUE.equals(currentUser.getVerified())) {
@@ -59,9 +60,10 @@ public class BoardService {
         return boardRepository.findAllByOrderByCreatedTimeDesc().stream()
                 .filter(board -> userAge >= board.getMinAge() && userAge <= board.getMaxAge())
                 .filter(board -> board.getGenderType() == GenderType.OTHER || board.getGenderType() == userGender)
-                .map(this::toListDto)
+                .map(board -> toListDto(board, currentUser)) // 수정된 부분
                 .toList();
     }
+
 
 
     @Transactional(readOnly = true)
@@ -144,7 +146,33 @@ public class BoardService {
         );
     }
 
-    private BoardListDto toListDto(Board board) {
+    public List<BoardListDto> toListDto(List<Board> boards, User currentUser) {
+        List<Like> userLikes = likeRepository.findByUserWithBoard(currentUser);
+        Set<Long> likedBoardIds = userLikes.stream()
+                .map(like -> like.getBoard().getId())
+                .collect(Collectors.toSet());
+
+        return boards.stream().map(board -> {
+            boolean liked = likedBoardIds.contains(board.getId());
+
+            return new BoardListDto(
+                    board.getTitle(),
+                    board.getStartDate(),
+                    board.getEndDate(),
+                    board.getMeetType(),
+                    board.getMeetDetail(),
+                    board.getInterestTag(),
+                    board.getHowMany(),
+                    board.getParticipation(),
+                    "/boards/" + board.getId(),
+                    liked
+            );
+        }).collect(Collectors.toList());
+    }
+
+    public BoardListDto toListDto(Board board, User currentUser) {
+        boolean liked = likeRepository.existsByUserAndBoard(currentUser, board);
+
         return new BoardListDto(
                 board.getTitle(),
                 board.getStartDate(),
@@ -154,9 +182,12 @@ public class BoardService {
                 board.getInterestTag(),
                 board.getHowMany(),
                 board.getParticipation(),
-                "/api/boards/" + board.getId()
+                "/boards/" + board.getId(),
+                liked
         );
     }
+
+
 
     private Board toEntity(BoardDto dto) {
         return Board.builder()

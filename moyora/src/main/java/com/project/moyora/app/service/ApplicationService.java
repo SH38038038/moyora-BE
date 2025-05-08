@@ -94,15 +94,16 @@ public class ApplicationService {
 
             // 수락 상태일 경우, 모집 인원 체크
             if (status == ApplicationStatus.ACCEPTED) {
-                long acceptedCount = applicationRepository.findByBoard(board).stream()
-                        .filter(app -> app.getStatus() == ApplicationStatus.ACCEPTED)
-                        .count();
-
-                // 모집 인원 초과 체크
-                if (acceptedCount >= board.getHowMany()) {
+                // 모집 인원 초과 여부 먼저 확인
+                if (board.getParticipation() >= board.getHowMany()) {
                     throw new IllegalStateException("모집 인원을 초과할 수 없습니다.");
                 }
+
+                // 참여 인원 증가
+                board.setParticipation(board.getParticipation() + 1);
+                boardRepository.save(board);
             }
+
         }
         // 신청자는 대기 또는 취소 상태 변경 가능
         else if (application.getApplicant().getId().equals(requesterId)) {
