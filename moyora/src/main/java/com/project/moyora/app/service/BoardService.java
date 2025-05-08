@@ -1,9 +1,11 @@
 package com.project.moyora.app.service;
 
 import com.project.moyora.app.Dto.BoardDto;
+import com.project.moyora.app.Dto.BoardListDto;
 import com.project.moyora.app.Dto.UserDto;
 import com.project.moyora.app.domain.ApplicationStatus;
 import com.project.moyora.app.domain.Board;
+import com.project.moyora.app.domain.GenderType;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.app.repository.BoardRepository;
 import lombok.RequiredArgsConstructor;
@@ -35,8 +37,11 @@ public class BoardService {
                 .endDate(dto.getEndDate())
                 .howMany(dto.getHowMany())
                 .participation(0)
+                .meetType(dto.getMeetType())
+                .meetDetail(dto.getMeetDetail())
                 .genderType(dto.getGenderType())
-                .Age(dto.getAge())
+                .minAge(dto.getMinAge())
+                .maxAge(dto.getMaxAge())
                 .interestTag(dto.getInterestTag())
                 .writer(currentUser)
                 .createdTime(LocalDateTime.now())
@@ -47,11 +52,17 @@ public class BoardService {
     }
 
 
-    public List<BoardDto> getAllBoards() {
+    public List<BoardListDto> getAllBoards(User currentUser) {
+        int userAge = currentUser.getAge(); // 동적으로 계산
+        GenderType userGender = currentUser.getGender();
+
         return boardRepository.findAllByOrderByCreatedTimeDesc().stream()
-                .map(this::toDto)
+                .filter(board -> userAge >= board.getMinAge() && userAge <= board.getMaxAge())
+                .filter(board -> board.getGenderType() == GenderType.OTHER || board.getGenderType() == userGender)
+                .map(this::toListDto)
                 .toList();
     }
+
 
     @Transactional(readOnly = true)
     public BoardDto getBoardById(Long id) {
@@ -63,13 +74,16 @@ public class BoardService {
                 board.getWriter().getName(),
                 board.getTitle(),
                 board.getGenderType(),
-                board.getAge(),
+                board.getMinAge(),
+                board.getMaxAge(),
                 board.getStartDate(),
                 board.getEndDate(),
                 board.getInterestTag(),
                 board.getContent(),
                 board.getHowMany(),
                 board.getParticipation(),
+                board.getMeetType(),
+                board.getMeetDetail(),
                 board.getCreatedTime(),
                 board.getUpdateTime()
         );
@@ -99,7 +113,7 @@ public class BoardService {
     }
 
 
-    public void deleteBoard(Long id, User currentUser) throws AccessDeniedException{
+    public void deleteBoard(Long id, User currentUser) throws AccessDeniedException {
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Board not found"));
         if (!board.getWriter().getId().equals(currentUser.getId())) {
@@ -115,15 +129,32 @@ public class BoardService {
                 board.getWriter().getName(),
                 board.getTitle(),
                 board.getGenderType(),
-                board.getAge(),
+                board.getMinAge(),
+                board.getMaxAge(),
                 board.getStartDate(),
                 board.getEndDate(),
                 board.getInterestTag(),
                 board.getContent(),
                 board.getHowMany(),
                 board.getParticipation(),
+                board.getMeetType(),
+                board.getMeetDetail(),
                 board.getCreatedTime(),
                 board.getUpdateTime()
+        );
+    }
+
+    private BoardListDto toListDto(Board board) {
+        return new BoardListDto(
+                board.getTitle(),
+                board.getStartDate(),
+                board.getEndDate(),
+                board.getMeetType(),
+                board.getMeetDetail(),
+                board.getInterestTag(),
+                board.getHowMany(),
+                board.getParticipation(),
+                "/api/boards/" + board.getId()
         );
     }
 
@@ -158,6 +189,5 @@ public class BoardService {
                             .build();
                 })
                 .toList();
-    }
-
+                }
 }

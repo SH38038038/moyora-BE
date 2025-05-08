@@ -1,12 +1,14 @@
 package com.project.moyora.app.controller;
 
+import com.project.moyora.app.Dto.ApplicationResponseDto;
 import com.project.moyora.app.Dto.BoardDto;
+import com.project.moyora.app.Dto.BoardListDto;
 import com.project.moyora.app.domain.User;
+import com.project.moyora.app.service.ApplicationService;
 import com.project.moyora.app.service.BoardService;
 import com.project.moyora.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -20,6 +22,7 @@ import java.util.List;
 public class BoardController {
 
     private final BoardService boardService;
+    private final ApplicationService applicationService;
 
     // ✅ 모집글 생성
     @PostMapping
@@ -41,12 +44,14 @@ public class BoardController {
     }
 
 
-
     // ✅ 모집글 목록 조회
     @GetMapping
-    public ResponseEntity<List<BoardDto>> getBoards() {
-        return ResponseEntity.ok(boardService.getAllBoards());
+    public ResponseEntity<List<BoardListDto>> getBoards(@AuthenticationPrincipal CustomUserDetails userDetails) {
+        User currentUser = userDetails.getUser();
+        List<BoardListDto> boards = boardService.getAllBoards(currentUser);
+        return ResponseEntity.ok(boards);
     }
+
 
     // ✅ 모집글 상세 조회
     @GetMapping("/{id}")
@@ -66,5 +71,21 @@ public class BoardController {
         boardService.deleteBoard(id, userDetails.getUser());
         return ResponseEntity.noContent().build();
     }
+
+    // ✅ 모집 신청 현황
+    @GetMapping("/{boardId}/applications")
+    public ResponseEntity<List<ApplicationResponseDto>> getBoardApplications(
+            @PathVariable Long boardId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        // ✅ userDetails를 그대로 넘김
+        List<ApplicationResponseDto> responseDtos = applicationService
+                .getApplicationsForBoardByOwner(boardId, userDetails);
+
+        return ResponseEntity.ok(responseDtos);
+    }
+
+
+
 }
 

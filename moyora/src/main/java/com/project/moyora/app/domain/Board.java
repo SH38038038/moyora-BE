@@ -31,7 +31,8 @@ public class Board {
     @Enumerated(EnumType.STRING)
     private GenderType genderType;
 
-    private Integer Age;
+    private Integer minAge;
+    private Integer maxAge;
 
     private LocalDate startDate;
     private LocalDate endDate;
@@ -46,11 +47,18 @@ public class Board {
 
     private Integer participation;  // 현재 신청자수
 
+    private MeetType meetType;
+
+    private String meetDetail;
+
     private LocalDateTime createdTime;
     private LocalDateTime updateTime;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BoardApplication> applications = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Like> likes = new ArrayList<>(); // 찜한 사용자 목록
 
     @PrePersist
     protected void onCreate() {

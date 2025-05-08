@@ -1,5 +1,6 @@
 package com.project.moyora.app.domain;
 
+import com.project.moyora.global.security.CustomUserDetails;
 import com.project.moyora.global.tag.InterestTag;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,25 +11,27 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Entity
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class BoardApplication {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    private User applicant;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "board_id")
     private Board board;
 
-    @Enumerated(EnumType.STRING)
-    private ApplicationStatus status; // WAITING, ACCEPTED, REJECTED
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User applicant;
+
+    @Enumerated(EnumType.STRING) // 또는 EnumType.ORDINAL
+    @Column(name = "status")
+    private ApplicationStatus status;
 
     private LocalDateTime appliedAt;
-
-    @PrePersist
-    protected void onApply() {
-        this.appliedAt = LocalDateTime.now();
-        this.status = ApplicationStatus.WAITING;
-    }
+    private LocalDateTime createdAt;
 }
 
