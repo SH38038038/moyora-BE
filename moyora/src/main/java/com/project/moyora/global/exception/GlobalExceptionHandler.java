@@ -14,5 +14,14 @@ public class GlobalExceptionHandler {
         return ApiResponseTemplete.error(ErrorCode.FORBIDDEN_AUTH_EXCEPTION, ex.getMessage());
     }
 
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponseTemplete<String>> handleNotFound(ResourceNotFoundException ex) {
+        return ApiResponseTemplete.error(ErrorCode.NOTICE_NOT_FOUND, ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<ApiResponseTemplete<String>> handleGeneral(Exception ex) {
+        return ApiResponseTemplete.error(ErrorCode.INTERNAL_SERVER_ERROR, ex.getMessage());
+    }
     // 다른 예외들도 추가로 처리 가능
 }

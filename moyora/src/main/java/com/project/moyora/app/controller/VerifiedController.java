@@ -1,6 +1,7 @@
 package com.project.moyora.app.controller;
 
 
+import com.project.moyora.app.Dto.RejectVerificationRequest;
 import com.project.moyora.app.Dto.VerificationResponse;
 import com.project.moyora.app.service.VerificationService;
 import com.project.moyora.global.exception.SuccessCode;
@@ -41,8 +42,11 @@ public class VerifiedController {
 
     // 인증 거절
     @PutMapping("/reject/{id}")
-    public ResponseEntity<ApiResponseTemplete<String>> rejectVerification(@PathVariable Long id) {
-        verificationService.rejectVerification(id);
+    public ResponseEntity<ApiResponseTemplete<String>> rejectVerification(
+            @PathVariable Long id,
+            @RequestBody RejectVerificationRequest request) {
+
+        verificationService.rejectVerification(id, request.getReason());
         return ApiResponseTemplete.success(SuccessCode.USER_VERIFICATION_REJECTED, "인증 거절 완료");
     }
 

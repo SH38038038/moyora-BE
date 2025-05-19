@@ -79,22 +79,21 @@ public class ApplicationService {
         }
 
         Long requesterId = requester.getUser().getId();
+        ApplicationStatus currentStatus = application.getStatus();
 
-        // 작성자만 수락/거절 상태 변경 가능
+        // 1. 상태가 LOCKED이면 절대 변경 불가
+        if (currentStatus == ApplicationStatus.LOCKED) {
+            throw new IllegalStateException("LOCKED 상태인 신청은 상태를 변경할 수 없습니다.");
+        }
+
+        // 작성자 요청
         if (board.getWriter().getId().equals(requesterId)) {
-            // 작성자는 수락 또는 거절만 가능
             if (status != ApplicationStatus.ACCEPTED && status != ApplicationStatus.REJECTED) {
                 throw new IllegalArgumentException("작성자는 신청을 수락 또는 거절만 할 수 있습니다.");
             }
 
-            // 이미 CANCELED 상태인 경우 ACCEPTED 또는 REJECTED로 변경 불가
-            if (application.getStatus() == ApplicationStatus.CANCELED) {
-                throw new IllegalStateException("CANCELED 상태인 신청은 수락 또는 거절할 수 없습니다.");
-            }
-
-            // 수락 상태일 경우, 모집 인원 체크
-            if (status == ApplicationStatus.ACCEPTED) {
-                // 모집 인원 초과 여부 먼저 확인
+            // 2. 상태를 ACCEPTED로 바꾸려면 모집 인원 확인
+            if (status == ApplicationStatus.ACCEPTED && currentStatus != ApplicationStatus.ACCEPTED) {
                 if (board.getParticipation() >= board.getHowMany()) {
                     throw new IllegalStateException("모집 인원을 초과할 수 없습니다.");
                 }
@@ -104,31 +103,35 @@ public class ApplicationService {
                 boardRepository.save(board);
             }
 
-        }
-        // 신청자는 대기 또는 취소 상태 변경 가능
-        else if (application.getApplicant().getId().equals(requesterId)) {
+        } else if (application.getApplicant().getId().equals(requesterId)) {
+            // 신청자 요청
             if (status != ApplicationStatus.WAITING && status != ApplicationStatus.CANCELED) {
                 throw new IllegalArgumentException("신청자는 대기 상태로 변경하거나 취소만 할 수 있습니다.");
             }
 
-            // 이미 CANCELED 상태인 경우 상태 변경 불가
-            if (application.getStatus() == ApplicationStatus.CANCELED && status != ApplicationStatus.CANCELED) {
+            if (currentStatus == ApplicationStatus.CANCELED && status != ApplicationStatus.CANCELED) {
                 throw new IllegalStateException("CANCELED 상태인 신청은 다시 변경할 수 없습니다.");
             }
-        }
-        // 작성자도 신청자도 아닌 경우
-        else {
+
+        } else {
+            // 작성자도 신청자도 아닌 경우
             throw new AccessDeniedException("본인만 상태를 변경할 수 있습니다.");
         }
 
-        // 신청 상태 변경
-        application.setStatus(status);
+        // 3. 기존 상태가 ACCEPTED → REJECTED/CANCELED 로 바뀌는 경우, 참여 인원 감소
+        if (currentStatus == ApplicationStatus.ACCEPTED &&
+                (status == ApplicationStatus.REJECTED || status == ApplicationStatus.CANCELED)) {
+            int newParticipation = board.getParticipation() - 1;
+            board.setParticipation(Math.max(0, newParticipation));
+            boardRepository.save(board);
+        }
 
-        // 수정 시각을 APPLIED_AT에 저장
+        // 상태 및 변경일 갱신
+        application.setStatus(status);
         application.setAppliedAt(LocalDateTime.now());
 
-        // 기존 신청서를 업데이트
-        applicationRepository.save(application);  // JPA는 이미 로딩된 엔티티를 업데이트 처리함
+        // 저장
+        applicationRepository.save(application);
     }
 
 

@@ -64,11 +64,12 @@ public class VerificationService {
 
     // 인증 거절
     @Transactional
-    public void rejectVerification(Long id) {
+    public void rejectVerification(Long id, String reason) {
         Verification verification = verificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("인증 요청을 찾을 수 없습니다."));
 
         verification.setStatus(VerificationStatus.REJECTED);
+        verification.setReason(reason);
 
         User user = verification.getUser();
         user.setVerified(false); // User의 verified 필드를 true로 설정

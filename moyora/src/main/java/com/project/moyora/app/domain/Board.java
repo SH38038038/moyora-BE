@@ -47,6 +47,8 @@ public class Board {
 
     private Integer participation;  // 현재 신청자수
 
+    private boolean confirmed;  // 확정 여부 (참여 인원 다 찼을 때만 변경 가능)
+
     private MeetType meetType;
 
     private String meetDetail;
@@ -70,4 +72,17 @@ public class Board {
     protected void onUpdate() {
         this.updateTime = LocalDateTime.now();
     }
+
+    public boolean isFull() {
+        return participation != null && howMany != null && participation >= howMany;
+    }
+
+    public void increaseParticipation() {
+        if (this.participation == null) this.participation = 0;
+        if (isFull()) {
+            throw new IllegalStateException("모집 인원이 모두 찼습니다.");
+        }
+        this.participation++;
+    }
+
 }

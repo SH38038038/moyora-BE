@@ -1,11 +1,7 @@
 package com.project.moyora.app.domain;
 
-import com.project.moyora.global.security.CustomUserDetails;
-import com.project.moyora.global.tag.InterestTag;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter

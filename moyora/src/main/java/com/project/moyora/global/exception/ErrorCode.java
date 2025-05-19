@@ -1,6 +1,7 @@
 package com.project.moyora.global.exception;
 
 
+import com.project.moyora.global.exception.model.ApiResponseTemplete;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -77,7 +78,11 @@ public enum ErrorCode {
 
     IMAGE_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "이미지 서버에 오류가 발생했습니다."),
     IMAGE_UPLOAD_ERROR(HttpStatus.BAD_REQUEST, "이미지 서버에 업로드를 실패했습니다."),
-    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "신분증 조회 불가");
+    USER_NOT_FOUND(HttpStatus.NOT_FOUND, "신분증 조회 불가"),
+
+    ALREADY_LIKED(HttpStatus.BAD_REQUEST, "이미 찜한 게시물입니다."),
+    BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
+    LIKE_NOT_FOUND(HttpStatus.BAD_REQUEST, "찜한 게시물이 아닙니다.");
 
 
 

@@ -3,9 +3,13 @@ package com.project.moyora.app.controller;
 import com.project.moyora.app.Dto.ApplicationResponseDto;
 import com.project.moyora.app.Dto.BoardDto;
 import com.project.moyora.app.Dto.BoardListDto;
+import com.project.moyora.app.Dto.BoardSearchRequest;
+import com.project.moyora.app.domain.Board;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.app.service.ApplicationService;
 import com.project.moyora.app.service.BoardService;
+import com.project.moyora.global.exception.SuccessCode;
+import com.project.moyora.global.exception.model.ApiResponseTemplete;
 import com.project.moyora.global.security.CustomUserDetails;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -33,6 +37,10 @@ public class BoardController {
         }
 
         User user = userDetails.getUser();
+
+        if (user.isSuspended()) {
+            throw new IllegalStateException("정지된 사용자는 게시글을 작성할 수 없습니다.");
+        }
 
         // verified 검사
         if (!Boolean.TRUE.equals(user.getVerified())) {
@@ -72,6 +80,16 @@ public class BoardController {
         return ResponseEntity.noContent().build();
     }
 
+    @PutMapping("/{boardId}/confirm")
+    public ResponseEntity<ApiResponseTemplete<String>> confirmBoard(
+            @PathVariable Long boardId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        boardService.confirmBoard(boardId, userDetails.getUser());  // 확정 처리
+        boardService.lockParticipantsAfterNoticeCreation(boardId);
+        return ApiResponseTemplete.success(SuccessCode.UPDATE_POST_SUCCESS, "모임이 확정되었습니다.");
+    }
+
     // ✅ 모집 신청 현황
     @GetMapping("/{boardId}/applications")
     public ResponseEntity<List<ApplicationResponseDto>> getBoardApplications(
@@ -83,6 +101,12 @@ public class BoardController {
                 .getApplicationsForBoardByOwner(boardId, userDetails);
 
         return ResponseEntity.ok(responseDtos);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<Board>> searchBoards(BoardSearchRequest request) {
+        List<Board> results = boardService.searchBoards(request);
+        return ResponseEntity.ok(results);
     }
 
 

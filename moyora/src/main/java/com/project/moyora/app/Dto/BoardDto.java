@@ -30,5 +30,9 @@ public class BoardDto {
     private String meetDetail;
     private LocalDateTime createdTime;
     private LocalDateTime updateTime;
+
+    public BoardDto(Long id) {
+        this.id = id;
+    }
 }
 

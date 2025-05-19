@@ -1,11 +1,9 @@
 package com.project.moyora.app.controller;
 
 import com.project.moyora.app.Dto.ApplicationDto;
-import com.project.moyora.app.Dto.ApplicationRequestDto;
 import com.project.moyora.app.domain.ApplicationStatus;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.app.service.ApplicationService;
-import com.project.moyora.app.service.BoardService;
 import com.project.moyora.global.exception.SuccessCode;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;
 import com.project.moyora.global.security.CustomUserDetails;
@@ -28,6 +26,11 @@ public class ApplicationController {
     public ResponseEntity<ApiResponseTemplete<ApplicationDto>> applyForBoard(
             @PathVariable Long boardId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        User user = userDetails.getUser();
+        if (user.isSuspended()) {
+            throw new IllegalStateException("정지된 사용자는 모임에 참여할 수 없습니다.");
+        }
 
         ApplicationDto applicationDto = applicationService.applyForBoard(boardId, userDetails);
         return ApiResponseTemplete.success(SuccessCode.CREATE_POST_SUCCESS, applicationDto);

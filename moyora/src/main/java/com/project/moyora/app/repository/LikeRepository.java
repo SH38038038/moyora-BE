@@ -15,7 +15,8 @@ public interface LikeRepository extends JpaRepository<Like, Long> {
     @Query("SELECT l FROM Like l JOIN FETCH l.board WHERE l.user = :user")
     List<Like> findByUserWithBoard(@Param("user") User user);
     boolean existsByUserAndBoard(User user, Board board);
-
+    @Query("SELECT l.board FROM Like l WHERE l.user = :user")
+    List<Board> findLikedBoardsByUser(@Param("user") User user);
 
 }
 
