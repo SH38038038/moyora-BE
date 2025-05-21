@@ -1,15 +1,13 @@
 package com.project.moyora.app.service;
 
-import com.project.moyora.app.Dto.BoardDto;
-import com.project.moyora.app.Dto.BoardListDto;
-import com.project.moyora.app.Dto.BoardSearchRequest;
-import com.project.moyora.app.Dto.UserDto;
+import com.project.moyora.app.Dto.*;
 import com.project.moyora.app.domain.*;
 import com.project.moyora.app.repository.BoardApplicationRepository;
 import com.project.moyora.app.repository.BoardRepository;
 import com.project.moyora.app.repository.LikeRepository;
 import com.project.moyora.app.repository.ReportRepository;
 import com.project.moyora.global.exception.ResourceNotFoundException;
+import com.project.moyora.global.tag.InterestTag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -53,7 +51,13 @@ public class BoardService {
                 .genderType(dto.getGenderType())
                 .minAge(dto.getMinAge())
                 .maxAge(dto.getMaxAge())
-                .interestTag(dto.getInterestTag())
+                .tags(dto.getTags().stream()
+                        .map(tagDto -> InterestTag.from(
+                                        tagDto.getSection(),
+                                        tagDto.getName(),         // 이 값은 enum 이름 (예: "HIKING") 이어야 함
+                                        tagDto.getDisplayName())
+                                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다: " + tagDto)))
+                        .collect(Collectors.toList()))
                 .writer(currentUser)
                 .createdTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
@@ -79,6 +83,10 @@ public class BoardService {
     public BoardDto getBoardById(Long id) {
         Board board = boardRepository.findBoardById(id);
 
+        List<TagDto> tagDtos = board.getTags().stream()
+                .map(tag -> new TagDto(tag.getSection(), tag.name(), tag.getDisplayName()))
+                .collect(Collectors.toList());
+
         // BoardDto 생성
         return new BoardDto(
                 board.getId(),
@@ -89,7 +97,7 @@ public class BoardService {
                 board.getMaxAge(),
                 board.getStartDate(),
                 board.getEndDate(),
-                board.getInterestTag(),
+                tagDtos,
                 board.getContent(),
                 board.getHowMany(),
                 board.getParticipation(),
@@ -154,7 +162,13 @@ public class BoardService {
         board.setEndDate(dto.getEndDate());
         board.setHowMany(dto.getHowMany());
         board.setGenderType(dto.getGenderType());
-        board.setInterestTag(dto.getInterestTag());
+        board.setTags(dto.getTags().stream()
+                .map(tagDto -> InterestTag.from(
+                                tagDto.getSection(),
+                                tagDto.getName(),         // 이 값은 enum 이름 (예: "HIKING") 이어야 함
+                                tagDto.getDisplayName())
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다: " + tagDto)))
+                .collect(Collectors.toList()));
 
         return toDto(boardRepository.save(board));
     }
@@ -177,6 +191,10 @@ public class BoardService {
     }
 
     private BoardDto toDto(Board board) {
+        List<TagDto> tagDtos = board.getTags().stream()
+                .map(tag -> new TagDto(tag.getSection(), tag.name(), tag.getDisplayName()))
+                .collect(Collectors.toList());
+
         return new BoardDto(
                 board.getId(),
                 board.getWriter().getName(),
@@ -186,7 +204,7 @@ public class BoardService {
                 board.getMaxAge(),
                 board.getStartDate(),
                 board.getEndDate(),
-                board.getInterestTag(),
+                tagDtos,
                 board.getContent(),
                 board.getHowMany(),
                 board.getParticipation(),
@@ -195,6 +213,7 @@ public class BoardService {
                 board.getCreatedTime(),
                 board.getUpdateTime()
         );
+
     }
 
     public List<BoardListDto> toListDto(List<Board> boards, User currentUser) {
@@ -206,23 +225,35 @@ public class BoardService {
         return boards.stream().map(board -> {
             boolean liked = likedBoardIds.contains(board.getId());
 
+            List<TagDto> tagDtos = board.getTags().stream()
+                    .map(tag -> new TagDto(tag.getSection(), tag.name(), tag.getDisplayName()))
+                    .collect(Collectors.toList());
+
+            // BoardListDto 생성 부분에서 interestTag → tagDtos로만 사용
             return new BoardListDto(
                     board.getTitle(),
                     board.getStartDate(),
                     board.getEndDate(),
                     board.getMeetType(),
                     board.getMeetDetail(),
-                    board.getInterestTag(),
+                    tagDtos,
                     board.getHowMany(),
                     board.getParticipation(),
                     "/boards/" + board.getId(),
                     liked
             );
+
         }).collect(Collectors.toList());
     }
 
+
     public BoardListDto toListDto(Board board, User currentUser) {
         boolean liked = likeRepository.existsByUserAndBoard(currentUser, board);
+
+        // board.getTags()가 List<Tag> 타입이고, Tag 엔티티가 section, name, displayName 필드가 있다고 가정
+        List<TagDto> tagDtos = board.getTags().stream()
+                .map(tag -> new TagDto(tag.getSection(), tag.name(), tag.getDisplayName()))
+                .collect(Collectors.toList());
 
         return new BoardListDto(
                 board.getTitle(),
@@ -230,13 +261,17 @@ public class BoardService {
                 board.getEndDate(),
                 board.getMeetType(),
                 board.getMeetDetail(),
-                board.getInterestTag(),
+                tagDtos,           // <-- List<TagDto>만 넘김
                 board.getHowMany(),
                 board.getParticipation(),
                 "/boards/" + board.getId(),
                 liked
         );
+
+
     }
+
+
 
 
 
@@ -248,8 +283,15 @@ public class BoardService {
                 .endDate(dto.getEndDate())
                 .howMany(dto.getHowMany())
                 .genderType(dto.getGenderType())
-                .interestTag(dto.getInterestTag())
+                .tags(dto.getTags().stream()
+                        .map(tagDto -> InterestTag.from(
+                                        tagDto.getSection(),
+                                        tagDto.getName(),         // 이 값은 enum 이름 (예: "HIKING") 이어야 함
+                                        tagDto.getDisplayName())
+                                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다: " + tagDto)))
+                        .collect(Collectors.toList()))
                 .build();
+
     }
 
     private List<UserDto> mapUsersByStatus(Board board, ApplicationStatus status) {
@@ -301,7 +343,13 @@ public class BoardService {
     }
 
     public List<Board> searchBoards(BoardSearchRequest request) {
-        return boardRepository.findAll(BoardSpecification.search(request));
+        return boardRepository.searchBoardsWithUserTags(
+                request.getTitle(),
+                request.getInterestTag(),
+                request.getMeetType()
+        );
     }
+
+
 
 }

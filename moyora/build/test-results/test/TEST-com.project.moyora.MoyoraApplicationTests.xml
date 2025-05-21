@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.project.moyora.MoyoraApplicationTests" tests="1" skipped="0" failures="0" errors="0" timestamp="2025-05-20T06:14:58.228Z" hostname="SH" time="0.756">
+  <properties/>
+  <testcase name="generateTestUsersByAgeAndGender()" classname="com.project.moyora.MoyoraApplicationTests" time="0.756"/>
+  <system-out><![CDATA[15:14:49.616 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.project.moyora.MoyoraApplicationTests]: MoyoraApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+15:14:49.789 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.project.moyora.MoyoraApplication for test class com.project.moyora.MoyoraApplicationTests
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.1)
+
+2025-05-20T15:14:50.324+09:00  INFO 19408 --- [moyora] [    Test worker] c.project.moyora.MoyoraApplicationTests  : Starting MoyoraApplicationTests using Java 21.0.2 with PID 19408 (started by seohy in C:\github\moyora-BE\moyora)
+2025-05-20T15:14:50.324+09:00  INFO 19408 --- [moyora] [    Test worker] c.project.moyora.MoyoraApplicationTests  : The following 1 profile is active: "jwt"
+2025-05-20T15:14:51.482+09:00  INFO 19408 --- [moyora] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-05-20T15:14:51.602+09:00  INFO 19408 --- [moyora] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 115 ms. Found 9 JPA repository interfaces.
+2025-05-20T15:14:52.534+09:00  INFO 19408 --- [moyora] [    Test worker] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-05-20T15:14:52.644+09:00  INFO 19408 --- [moyora] [    Test worker] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.2.Final
+2025-05-20T15:14:52.707+09:00  INFO 19408 --- [moyora] [    Test worker] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-05-20T15:14:53.163+09:00  INFO 19408 --- [moyora] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-05-20T15:14:53.194+09:00  INFO 19408 --- [moyora] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-05-20T15:14:53.620+09:00  INFO 19408 --- [moyora] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@1253b822
+2025-05-20T15:14:53.620+09:00  INFO 19408 --- [moyora] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-05-20T15:14:53.697+09:00  WARN 19408 --- [moyora] [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-05-20T15:14:54.935+09:00  INFO 19408 --- [moyora] [    Test worker] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-05-20T15:14:55.171+09:00  INFO 19408 --- [moyora] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-05-20T15:14:55.585+09:00  INFO 19408 --- [moyora] [    Test worker] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-05-20T15:14:56.513+09:00  INFO 19408 --- [moyora] [    Test worker] c.p.moyora.global.security.TokenService  : ✅ jwt.access.expiration: 1800000
+2025-05-20T15:14:56.513+09:00  INFO 19408 --- [moyora] [    Test worker] c.p.moyora.global.security.TokenService  : ✅ jwt.refresh.expiration: 36000000
+2025-05-20T15:14:56.513+09:00  INFO 19408 --- [moyora] [    Test worker] c.p.moyora.global.security.TokenService  : ✅ jwt.secret: f4e6cdb3bfe18ef04ffe31d054a56099649a10d651aa5e7e719276b9a6787cc4c5020edbf80b705724ce5de1ae77dd9487f5bc5ba29de447f7b527210f595346
+2025-05-20T15:14:58.214+09:00  INFO 19408 --- [moyora] [    Test worker] c.project.moyora.MoyoraApplicationTests  : Started MoyoraApplicationTests in 8.258 seconds (process running for 9.762)
+]]></system-out>
+  <system-err><![CDATA[WARNING: A Java agent has been loaded dynamically (C:\Users\seohy\.gradle\caches\modules-2\files-2.1\net.bytebuddy\byte-buddy-agent\1.14.17\e3c251a39dc90badaf71c83427ba46840f219d8d\byte-buddy-agent-1.14.17.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+]]></system-err>
+</testsuite>

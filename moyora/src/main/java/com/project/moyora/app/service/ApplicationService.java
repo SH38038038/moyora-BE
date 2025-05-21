@@ -5,6 +5,7 @@ import com.project.moyora.app.Dto.ApplicationRequestDto;
 import com.project.moyora.app.Dto.ApplicationResponseDto;
 import com.project.moyora.app.domain.*;
 import com.project.moyora.app.repository.ApplicationRepository;
+import com.project.moyora.app.repository.BoardApplicationRepository;
 import com.project.moyora.app.repository.BoardRepository;
 import com.project.moyora.app.repository.UserRepository;
 import com.project.moyora.global.security.CustomUserDetails;
@@ -21,7 +22,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ApplicationService {
 
-    private final ApplicationRepository applicationRepository;
+    private final BoardApplicationRepository applicationRepository;
     private final BoardRepository boardRepository;
 
     // 1. 신청 처리 (WAITING 상태로)
@@ -49,6 +50,15 @@ public class ApplicationService {
         if (alreadyApplied) {
             throw new IllegalStateException("이미 신청한 사용자입니다.");
         }
+
+        // OFFLINE 모임일 경우 인증된 사용자만 신청 가능
+        if (board.getMeetType() == MeetType.OFFLINE) {
+            Boolean verification = currentUser.getUser().getVerified();
+            if (verification == null || currentUser.getUser().getVerificationStatus() != VerificationStatus.ACCEPTED) {
+                throw new AccessDeniedException("오프라인 모임은 인증된 사용자만 신청할 수 있습니다.");
+            }
+        }
+
 
         // 신청 처리 (대기 상태로)
         BoardApplication application = BoardApplication.builder()
@@ -144,10 +154,12 @@ public class ApplicationService {
             throw new AccessDeniedException("신청 현황은 게시글 작성자만 조회할 수 있습니다.");
         }
 
-        List<BoardApplication> applications = applicationRepository.findByBoardIdWithApplicants(boardId);
+        // ✅ Lazy 로딩 방지를 위한 fetch join 메서드 사용
+        List<BoardApplication> applications = applicationRepository.findWithApplicantAndTagsByBoard(board);
 
         return applications.stream()
                 .map(ApplicationResponseDto::from)
                 .collect(Collectors.toList());
     }
+
 }

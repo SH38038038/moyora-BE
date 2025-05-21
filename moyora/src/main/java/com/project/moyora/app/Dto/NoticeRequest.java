@@ -9,5 +9,5 @@ import lombok.*;
 public class NoticeRequest {
     private String title;
     private String content;
-    private Long boardId;
+    //private Long boardId;
 }

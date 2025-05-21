@@ -1,0 +1,45 @@
+spring:
+  port: 8080
+  profiles:
+    include: jwt
+  datasource:
+    url: ${DB_JDBC_URL}
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    show-sql: false
+    database: mysql
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+    open-in-view: false
+  security:
+    oauth2:
+      client:
+        registration:
+          kakao:
+            client-id: 3110fa86a38386bae9143b097f111ce6
+            client-secret: oS06wcSJfjrT7ImVPDLN5aSoUNz5x1Mw
+            scope:
+              - account_email
+              - gender
+              - birthday
+              - birthyear
+              - name
+            authorization-grant-type: authorization_code
+            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+            client-name: Kakao
+            client-authentication-method: client_secret_post
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
+imgbb:
+  api:
+    key: 4a759f6c3a0006eb8275069c7af6938e

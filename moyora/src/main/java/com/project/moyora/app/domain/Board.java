@@ -36,9 +36,15 @@ public class Board {
 
     private LocalDate startDate;
     private LocalDate endDate;
-
+/*
     @Enumerated(EnumType.STRING)
     private InterestTag interestTag;
+ */
+
+    @ElementCollection(targetClass = InterestTag.class, fetch = FetchType.EAGER)
+    @CollectionTable(name = "board_interest_tags", joinColumns = @JoinColumn(name = "board_id"))
+    @Enumerated(EnumType.STRING)
+    private List<InterestTag> tags = new ArrayList<>();
 
     @Column(columnDefinition = "TEXT")
     private String content;

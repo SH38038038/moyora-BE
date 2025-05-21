@@ -15,9 +15,17 @@ import java.util.Optional;
 @Repository
 public interface BoardApplicationRepository extends JpaRepository<BoardApplication, Long> {
 
-    @Query("SELECT ba.board FROM BoardApplication ba WHERE ba.applicant = :user AND ba.status = 'ACCEPTED'")
+    @Query("SELECT ba.board FROM BoardApplication ba WHERE ba.applicant = :user AND ba.status = 'LOCKED'")
     List<Board> findAcceptedBoardsByUser(@Param("user") User user);
     boolean existsByBoardAndApplicantAndStatus(Board board, User applicant, ApplicationStatus status);
     Optional<BoardApplication> findByBoard_IdAndApplicant_Name(Long boardId, String name);
     List<BoardApplication> findByBoard(Board board);
+    @Query("""
+    SELECT ba FROM BoardApplication ba
+    JOIN FETCH ba.applicant a
+    LEFT JOIN FETCH a.interestTags
+    WHERE ba.board = :board
+""")
+    List<BoardApplication> findWithApplicantAndTagsByBoard(@Param("board") Board board);
+
 }

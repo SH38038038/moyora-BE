@@ -3,7 +3,7 @@ package com.project.moyora.app.Dto;
 import com.project.moyora.app.domain.MeetType;
 import com.project.moyora.global.tag.InterestTag;
 import lombok.*;
-
+import java.util.List;
 import java.time.LocalDate;
 
 @Getter
@@ -17,7 +17,7 @@ public class BoardListDto {
     private LocalDate endDate;
     private MeetType meetType;
     private String meetDetail;
-    private InterestTag interestTag;
+    private List<TagDto> tags;
     private Integer howMany;
     private Integer participation;
     private String detailUrl;

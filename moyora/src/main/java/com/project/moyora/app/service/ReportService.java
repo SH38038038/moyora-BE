@@ -6,6 +6,7 @@ import com.project.moyora.app.domain.*;
 import com.project.moyora.app.repository.BoardRepository;
 import com.project.moyora.app.repository.ReportRepository;
 import com.project.moyora.app.repository.UserRepository;
+import com.project.moyora.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
@@ -22,9 +23,11 @@ public class ReportService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
 
-    public void reportPost(User reporter, Long boardId, String reason) {
+    public void reportBoard(Long boardId, String reason, CustomUserDetails reporterDetails) {
+        User reporter = reporterDetails.getUser();
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new NoSuchElementException("게시글이 존재하지 않습니다."));
+
         if (board.getWriter().getId().equals(reporter.getId())) {
             throw new IllegalArgumentException("본인 게시글은 신고할 수 없습니다.");
         }
@@ -43,7 +46,8 @@ public class ReportService {
         reportRepository.save(report);
     }
 
-    public void reportUser(User reporter, Long reportedUserId, String reason) {
+    public void reportUser(Long reportedUserId, String reason, CustomUserDetails reporterDetails) {
+        User reporter = reporterDetails.getUser();
         User reported = userRepository.findById(reportedUserId)
                 .orElseThrow(() -> new NoSuchElementException("사용자가 존재하지 않습니다."));
 
@@ -51,10 +55,15 @@ public class ReportService {
             throw new IllegalArgumentException("본인을 신고할 수 없습니다.");
         }
 
+        if (reportRepository.existsByReporterAndReportedUserAndStatus(reporter, reported, ReportStatus.PENDING)) {
+            throw new IllegalStateException("이미 이 사용자에 대해 처리 대기 중인 신고가 있습니다.");
+        }
+
+/*
         if (reportRepository.existsByReporterAndReportedUser(reporter, reported)) {
             throw new IllegalArgumentException("이미 신고한 사용자입니다.");
         }
-
+*/
         Report report = new Report();
         report.setReporter(reporter);
         report.setReportedUser(reported);
@@ -64,7 +73,6 @@ public class ReportService {
         report.setCreatedAt(LocalDateTime.now());
         reportRepository.save(report);
     }
-
     public List<ReportResponse> getAllReports() {
         return reportRepository.findAllWithAssociations().stream().map(report -> {
             ReportResponse res = new ReportResponse();
@@ -72,14 +80,25 @@ public class ReportService {
             res.setReason(report.getReason());
             res.setReportType(report.getReportType());
             res.setStatus(report.getStatus());
-            res.setReporterEmail(report.getReporter().getEmail());
-            res.setReportedTarget(report.getReportType() == ReportType.POST ?
-                    "Post ID: " + report.getReportedBoard().getId() :
-                    "User Email: " + report.getReportedUser().getEmail());
             res.setCreatedAt(report.getCreatedAt());
+
+            // 신고자 정보
+            res.setReporterId(report.getReporter().getId());
+            res.setReporterName(report.getReporter().getName());
+
+            // 피신고 대상 정보
+            if (report.getReportType() == ReportType.POST && report.getReportedBoard() != null) {
+                res.setReportedId(report.getReportedBoard().getId());
+                res.setReportedName(report.getReportedBoard().getTitle()); // 또는 작성자 이름 등으로 수정 가능
+            } else if (report.getReportType() == ReportType.USER && report.getReportedUser() != null) {
+                res.setReportedId(report.getReportedUser().getId());
+                res.setReportedName(report.getReportedUser().getName());
+            }
+
             return res;
         }).collect(Collectors.toList());
     }
+
 
     public void updateReportStatus(Long reportId, ReportStatus status) {
         Report report = reportRepository.findById(reportId)

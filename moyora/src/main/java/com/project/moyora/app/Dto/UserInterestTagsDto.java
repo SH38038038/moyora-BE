@@ -1,20 +1,20 @@
 package com.project.moyora.app.Dto;
 
+import com.project.moyora.app.domain.Tag;
 import com.project.moyora.global.tag.InterestTag;
 import lombok.Getter;
-import lombok.Setter;
 
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Getter
-@Setter
 public class UserInterestTagsDto {
-    private Set<String> interestTags;
+    private final List<Tag> interestTags;
 
-    public UserInterestTagsDto(Set<InterestTag> interestTags) {
-        this.interestTags = interestTags.stream()
-                .map(InterestTag::name)
-                .collect(Collectors.toSet());
+    public UserInterestTagsDto(Set<InterestTag> tags) {
+        this.interestTags = tags.stream()
+                .map(tag -> new Tag(tag.getSection(), tag.name(), tag.getDisplayName()))
+                .collect(Collectors.toList());
     }
 }

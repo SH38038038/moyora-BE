@@ -7,7 +7,7 @@ import com.project.moyora.app.domain.User;
 import java.util.List;
 
 public interface NoticeService {
-    NoticeDto createNotice(NoticeRequest request, User user);
+    NoticeDto createNotice(Long boardId, NoticeRequest request, User user);
     List<NoticeDto> getAllNotices();
     NoticeDto getNotice(Long id);
     void addComment(Long noticeId, String content, User user);

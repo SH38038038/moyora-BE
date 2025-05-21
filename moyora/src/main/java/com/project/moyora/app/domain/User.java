@@ -49,8 +49,10 @@ public class User {
 
     private String refreshToken;
 
-    @ElementCollection(targetClass = InterestTag.class)
+    @ElementCollection(fetch = FetchType.EAGER, targetClass = InterestTag.class)
+    @CollectionTable(name = "user_interest_tags", joinColumns = @JoinColumn(name = "user_id"))
     @Enumerated(EnumType.STRING)
+    @Column(name = "interest_tag")
     private Set<InterestTag> interestTags = new HashSet<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)

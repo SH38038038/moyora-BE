@@ -25,7 +25,7 @@ public class NoticeDto {
                 .id(notice.getId())
                 .title(notice.getTitle())
                 .content(notice.getContent())
-                .writer(notice.getWriter().getName())
+                .writer(notice.getWriter() != null ? notice.getWriter().getName() : null)
                 .createdTime(notice.getCreatedTime())
                 .comments(
                         notice.getComments().stream()
@@ -35,7 +35,7 @@ public class NoticeDto {
                 .build();
     }
 
-    public NoticeDto(Long id, String title, String content, LocalDateTime createdTime) {
+    public NoticeDto(Long id, String title, String content, LocalDateTime createdTime ) {
         this.id = id;
         this.title = title;
         this.content = content;

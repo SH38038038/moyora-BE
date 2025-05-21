@@ -4,7 +4,7 @@ import com.project.moyora.app.domain.GenderType;
 import com.project.moyora.app.domain.MeetType;
 import com.project.moyora.global.tag.InterestTag;
 import lombok.*;
-
+import java.util.List;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -22,7 +22,7 @@ public class BoardDto {
     private Integer maxAge;
     private LocalDate startDate;
     private LocalDate endDate;
-    private InterestTag interestTag;
+    private List<TagDto> tags;
     private String content;
     private Integer howMany;
     private Integer participation;

@@ -1,9 +1,6 @@
 package com.project.moyora.app.controller;
 
-import com.project.moyora.app.Dto.ApplicationResponseDto;
-import com.project.moyora.app.Dto.BoardDto;
-import com.project.moyora.app.Dto.BoardListDto;
-import com.project.moyora.app.Dto.BoardSearchRequest;
+import com.project.moyora.app.Dto.*;
 import com.project.moyora.app.domain.Board;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.app.service.ApplicationService;
@@ -75,9 +72,9 @@ public class BoardController {
 
     // ✅ 모집글 삭제
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteBoard(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
+    public ResponseEntity<ApiResponseTemplete<String>> deleteBoard(@PathVariable Long id, @AuthenticationPrincipal CustomUserDetails userDetails) {
         boardService.deleteBoard(id, userDetails.getUser());
-        return ResponseEntity.noContent().build();
+        return ApiResponseTemplete.success(SuccessCode.DELETE_POST_SUCCESS, "모임이 삭제되었습니다.");
     }
 
     @PutMapping("/{boardId}/confirm")
@@ -104,11 +101,13 @@ public class BoardController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<Board>> searchBoards(BoardSearchRequest request) {
+    public ResponseEntity<List<BoardResponseDto>> searchBoards(BoardSearchRequest request) {
         List<Board> results = boardService.searchBoards(request);
-        return ResponseEntity.ok(results);
+        List<BoardResponseDto> response = results.stream()
+                .map(BoardResponseDto::from)
+                .toList();
+        return ResponseEntity.ok(response);
     }
-
 
 
 }

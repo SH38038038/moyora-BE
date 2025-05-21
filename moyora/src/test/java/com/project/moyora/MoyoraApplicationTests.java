@@ -13,50 +13,45 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @SpringBootTest
 @Transactional
 @Rollback(false)
 class MoyoraApplicationTests {
 
-	@Autowired
-	private UserRepository userRepository;
-	@Autowired
-	private TokenService tokenService;
-	@Autowired
-	private VerificationRepository verificationRepository;
+    @Autowired
+    private UserRepository userRepository;
 
-	@Test
-	void createTenUsersTest() {
-		for (int i = 1; i <= 10; i++) {
-			// User 생성
-			User user = User.builder()
-					.name("사용자" + i)
-					.email("user" + i + "@example.com")
-					.gender(i % 2 == 0 ? GenderType.MALE : GenderType.FEMALE)
-					.birth(LocalDate.of(1990 + i % 5, i % 12 + 1, i % 28 + 1))
-					.idCardUrl("https://example.com/idcard" + i + ".jpg")
-					.verified(false)
-					.verificationStatus(VerificationStatus.PENDING)
-					.roleType(RoleType.USER)
-					.deletedAt(null)
-					.refreshToken(tokenService.createRefreshToken())
-					.build();
+    @Autowired
+    private TokenService tokenService;
 
-			// User 저장
-			userRepository.save(user);
+    @Test
+    void generateTestUsersByAgeAndGender() {
+        int currentYear = LocalDate.now().getYear();
+        int[] ageGroups = {20, 30, 40, 50};
 
-			// Verification 생성 및 연결
-			Verification verification = Verification.builder()
-					.user(user) // 방금 생성한 User와 연결
-					.status(VerificationStatus.PENDING) // 기본 상태로 PENDING
-					.reason("Verification pending") // 이유 (거절 시 이유)
-					.createdAt(LocalDateTime.now()) // 생성 시간
-					.updatedAt(LocalDateTime.now()) // 업데이트 시간
-					.build();
+        for (int age : ageGroups) {
+            int birthYear = currentYear - (age + 5); // 중간 나이 기준 (25세, 35세 등)
 
-			// Verification 저장
-			verificationRepository.save(verification);
-		}
-	}
+            for (GenderType gender : List.of(GenderType.MALE, GenderType.FEMALE)) {
+                for (int i = 1; i <= 2; i++) {
+                    String genderCode = gender == GenderType.MALE ? "m" : "f";
+
+                    User user = User.builder()
+                            .name(age + "대_" + genderCode + i)
+                            .email("user" + age + genderCode + i + "@ex.com")
+                            .birth(LocalDate.of(birthYear, 1, 1))
+                            .gender(gender)
+                            .roleType(RoleType.USER)
+                            .build();
+
+                    String refreshToken = tokenService.createRefreshToken();
+                    user.setRefreshToken(refreshToken);
+
+                    userRepository.save(user);
+                }
+            }
+        }
+    }
 }

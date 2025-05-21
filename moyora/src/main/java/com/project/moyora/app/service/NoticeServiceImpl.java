@@ -28,8 +28,8 @@ public class NoticeServiceImpl implements NoticeService {
     private final BoardRepository boardRepository;
 
     @Override
-    public NoticeDto createNotice(NoticeRequest request, User user) {
-        Board board = boardRepository.findById(request.getBoardId())
+    public NoticeDto createNotice(Long boardId, NoticeRequest request, User user) {
+        Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
 
         Notice notice = Notice.builder()
@@ -38,22 +38,37 @@ public class NoticeServiceImpl implements NoticeService {
                 .writer(user)
                 .board(board)
                 .build();
-        return NoticeDto.fromEntity(noticeRepository.save(notice));
+
+        noticeRepository.save(notice);
+
+        // Lazy 로딩 문제 해결: writer + comments까지 로딩
+        Notice saved = noticeRepository.findByIdWithWriterAndComments(notice.getId())
+                .orElseThrow(() -> new IllegalStateException("공지 저장 실패"));
+
+        return NoticeDto.fromEntity(saved);
     }
 
     @Override
     public List<NoticeDto> getAllNotices() {
-        return noticeRepository.findAll().stream()
+        return noticeRepository.findAllWithWriterAndComments().stream()
+                .map(NoticeDto::fromEntity)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<NoticeDto> getNoticesByBoard(Long boardId) {
+        return noticeRepository.findAllByBoardIdWithWriterAndComments(boardId).stream()
                 .map(NoticeDto::fromEntity)
                 .collect(Collectors.toList());
     }
 
     @Override
     public NoticeDto getNotice(Long id) {
-        Notice notice = noticeRepository.findById(id)
+        Notice notice = noticeRepository.findByIdWithWriterAndComments(id)
                 .orElseThrow(() -> new EntityNotFoundException("공지글을 찾을 수 없습니다."));
         return NoticeDto.fromEntity(notice);
     }
+
 
     @Override
     public void addComment(Long noticeId, String content, User user) {
@@ -67,7 +82,7 @@ public class NoticeServiceImpl implements NoticeService {
                 .build();
         commentRepository.save(comment);
     }
-
+/*
     @Override
     public List<NoticeDto> getNoticesByBoard(Long boardId) {
         List<Notice> notices = noticeRepository.findByBoardId(boardId);  // 해당 게시판에 속하는 공지 조회
@@ -75,7 +90,7 @@ public class NoticeServiceImpl implements NoticeService {
                 .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
-
+*/
     // Notice 엔티티를 NoticeDto로 변환하는 메서드
     private NoticeDto convertToDto(Notice notice) {
         return new NoticeDto(
@@ -86,6 +101,7 @@ public class NoticeServiceImpl implements NoticeService {
         );
     }
 
+    @Transactional
     @Override
     public NoticeDto updateNotice(Long noticeId, NoticeRequest noticeRequest, User user) {
         Notice notice = noticeRepository.findById(noticeId)

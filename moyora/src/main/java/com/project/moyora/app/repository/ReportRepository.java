@@ -14,4 +14,7 @@ public interface ReportRepository extends JpaRepository<Report, Long> {
     @Query("SELECT r FROM Report r LEFT JOIN FETCH r.reporter LEFT JOIN FETCH r.reportedUser LEFT JOIN FETCH r.reportedBoard")
     List<Report> findAllWithAssociations();
 
+    boolean existsByReporterAndReportedUserAndStatus(User reporter, User reportedUser, ReportStatus status);
+
+
 }

@@ -14,8 +14,12 @@ public class ReportResponse {
     private String reason;
     private ReportType reportType;
     private ReportStatus status;
-    private String reporterEmail;
-    private String reportedTarget;
+
+    private Long reporterId;
+    private String reporterName;
+
+    private Long reportedId;
+    private String reportedName;
+
     private LocalDateTime createdAt;
-    // Getters, Setters
 }

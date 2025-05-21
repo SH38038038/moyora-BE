@@ -1,6 +1,7 @@
 package com.project.moyora.app.controller;
 
 import com.project.moyora.app.Dto.BoardListDto;
+import com.project.moyora.app.Dto.TagDto;
 import com.project.moyora.app.Dto.UserInterestTagsDto;
 import com.project.moyora.app.domain.Board;
 import com.project.moyora.app.domain.Like;
@@ -15,7 +16,6 @@ import com.project.moyora.global.exception.SuccessCode;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;
 import com.project.moyora.global.tag.InterestTag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
@@ -83,10 +83,17 @@ public class MyPageController {
 
     // 관심 태그 수정
     @PutMapping("/interest-tags")
-    public ResponseEntity<ApiResponseTemplete<String>> updateInterestTags(@RequestBody Set<InterestTag> tags, Principal principal) {
+    public ResponseEntity<ApiResponseTemplete<String>> updateInterestTags(
+            @RequestBody Set<String> tagNames, Principal principal) {
+
+        Set<InterestTag> tags = tagNames.stream()
+                .map(InterestTag::valueOf)
+                .collect(Collectors.toSet());
+
         userService.updateInterestTags(principal, tags);
         return ApiResponseTemplete.success(SuccessCode.UPDATE_POST_SUCCESS, "관심 태그 수정 완료");
     }
+
 
     // 참여 중인 모임
     @GetMapping("/boards/participating")
@@ -120,13 +127,18 @@ public class MyPageController {
     private List<BoardListDto> toDtoList(List<Board> boards, User user) {
         return boards.stream().map(board -> {
             boolean liked = likeRepository.findByUserAndBoard(user, board).isPresent();
+
+            List<TagDto> tagDtos = board.getTags().stream()
+                    .map(tag -> new TagDto(tag.getSection(), tag.name(), tag.getDisplayName()))
+                    .collect(Collectors.toList());
+
             return new BoardListDto(
                     board.getTitle(),
                     board.getStartDate(),
                     board.getEndDate(),
                     board.getMeetType(),
                     board.getMeetDetail(),
-                    board.getInterestTag(),
+                    tagDtos,    // 변환된 TagDto 리스트 전달
                     board.getHowMany(),
                     board.getParticipation(),
                     "/api/boards/" + board.getId(),
@@ -134,4 +146,5 @@ public class MyPageController {
             );
         }).collect(Collectors.toList());
     }
+
 }

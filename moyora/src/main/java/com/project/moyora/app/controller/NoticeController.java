@@ -32,8 +32,8 @@ public class NoticeController {
             @RequestBody NoticeRequest noticeRequest,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        BoardDto boardDto = new BoardDto(boardId);  // BoardDto 생성
-        Board board = boardService.getBoardEntityFromDto(boardDto);  // Board 엔티티로 변환
+        BoardDto boardDto = new BoardDto(boardId);
+        Board board = boardService.getBoardEntityFromDto(boardDto);
 
         if (!boardService.isUserParticipantOrWriter(board, userDetails.getUser())) {
             throw new AccessDeniedException("이 게시판에 참여한 사용자만 공지를 생성할 수 있습니다.");
@@ -43,9 +43,10 @@ public class NoticeController {
             throw new AccessDeniedException("참여 인원이 모두 찼을 때만 공지사항을 생성할 수 있습니다.");
         }
 
-        NoticeDto notice = noticeService.createNotice(noticeRequest, userDetails.getUser());
+        NoticeDto notice = noticeService.createNotice(boardId, noticeRequest, userDetails.getUser());
         return ApiResponseTemplete.success(SuccessCode.CREATE_POST_SUCCESS, notice);
     }
+
 
     // 공지사항 조회 (단건)
     @GetMapping("/{noticeId}")
