@@ -22,7 +22,13 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
 
     List<Board> findByWriter(User user);
 
-    @Query("SELECT b FROM Board b JOIN b.tags t WHERE t = :tag AND b.meetType = :meetType AND b.title LIKE %:keyword%")
+    @Query("""
+            SELECT DISTINCT b FROM Board b 
+            LEFT JOIN b.tags t 
+            WHERE (:tag IS NULL OR t = :tag)
+            AND (:meetType IS NULL OR b.meetType = :meetType)
+            AND b.title LIKE %:keyword%
+    """)
     List<Board> searchBoardsWithUserTags(@Param("keyword") String keyword,
                                          @Param("tag") InterestTag tag,
                                          @Param("meetType") MeetType meetType);

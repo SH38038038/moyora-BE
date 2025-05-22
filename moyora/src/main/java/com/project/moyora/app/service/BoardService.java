@@ -10,6 +10,7 @@ import com.project.moyora.global.exception.ResourceNotFoundException;
 import com.project.moyora.global.tag.InterestTag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +24,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class BoardService {
@@ -317,15 +318,18 @@ public class BoardService {
 
     @Transactional
     public void deleteBoardIfExpiredOrReported(Long boardId) {
-        Board board = boardRepository.findById(boardId)
-                .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
+        Board board = boardRepository.findById(boardId).orElse(null);
+        if (board == null) {
+            log.warn("게시글 ID {} 는 존재하지 않음", boardId);
+            return;
+        }
 
         LocalDate endDate = board.getEndDate();
         LocalDateTime now = LocalDateTime.now();
 
-        boolean isExpired = endDate != null && now.isAfter(endDate.plusDays(3).atStartOfDay());
+        boolean isExpired = endDate != null && now.isAfter(endDate.plusDays(1).atStartOfDay());
         boolean isReported = reportRepository.existsByReportTypeAndReportedBoardAndStatus(
-                ReportType.POST, board, ReportStatus.PENDING);
+                ReportType.POST, board, ReportStatus.ACCEPTED);
 
         if (isExpired || isReported) {
             // 연관된 BoardApplication, Notice 모두 cascade로 삭제됨
@@ -343,13 +347,14 @@ public class BoardService {
     }
 
     public List<Board> searchBoards(BoardSearchRequest request) {
+        String keyword = request.getTitle();
+        if (keyword.isBlank()) {
+            keyword = "%";
+        }
         return boardRepository.searchBoardsWithUserTags(
-                request.getTitle(),
+                keyword,
                 request.getInterestTag(),
                 request.getMeetType()
         );
     }
-
-
-
 }
