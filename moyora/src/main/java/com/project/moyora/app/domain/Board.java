@@ -43,6 +43,7 @@ public class Board {
 
     @ElementCollection(targetClass = InterestTag.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "board_interest_tags", joinColumns = @JoinColumn(name = "board_id"))
+    @Column(name = "tags")  // 컬럼 이름 명시
     @Enumerated(EnumType.STRING)
     private List<InterestTag> tags = new ArrayList<>();
 

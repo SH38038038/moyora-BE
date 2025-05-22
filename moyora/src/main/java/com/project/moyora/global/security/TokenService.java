@@ -52,9 +52,9 @@ public class TokenService {
                         @Value("${jwt.access.expiration}") long accessTokenValidityTime,
                         @Value("${jwt.refresh.expiration}") long refreshTokenValidityTime,
                         @Value("${jwt.secret}") String secretKey) {
-        log.info("✅ jwt.access.expiration: {}", accessTokenValidityTime);
-        log.info("✅ jwt.refresh.expiration: {}", refreshTokenValidityTime);
-        log.info("✅ jwt.secret: {}", secretKey);
+        //log.info("✅ jwt.access.expiration: {}", accessTokenValidityTime);
+        //log.info("✅ jwt.refresh.expiration: {}", refreshTokenValidityTime);
+        //log.info("✅ jwt.secret: {}", secretKey);
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.accessTokenValidityTime = accessTokenValidityTime;

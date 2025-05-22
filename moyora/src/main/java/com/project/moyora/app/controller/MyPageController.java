@@ -4,6 +4,7 @@ import com.project.moyora.app.Dto.BoardListDto;
 import com.project.moyora.app.Dto.TagDto;
 import com.project.moyora.app.Dto.UserInterestTagsDto;
 import com.project.moyora.app.domain.Board;
+import com.project.moyora.app.domain.GenderType;
 import com.project.moyora.app.domain.Like;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.app.repository.BoardApplicationRepository;
@@ -14,9 +15,11 @@ import com.project.moyora.app.service.UserService;
 import com.project.moyora.global.exception.ErrorCode;
 import com.project.moyora.global.exception.SuccessCode;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;
+import com.project.moyora.global.security.CustomUserDetails;
 import com.project.moyora.global.tag.InterestTag;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
@@ -146,5 +149,41 @@ public class MyPageController {
             );
         }).collect(Collectors.toList());
     }
+
+    @GetMapping("/dashboard")
+    public ResponseEntity<DashboardResponse> getDashboard(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        User user = userDetails.getUser();
+
+        DashboardResponse response = DashboardResponse.builder()
+                .userId(user.getId())
+                .name(user.getName())
+                .gender(user.getGender())
+                .age(user.getAge()) // 기존 User 엔티티의 getAge() 활용
+                .links(List.of(
+                        "/api/image/upload/icard",
+                        "/api/interest-tag",
+                        "/api/boards/liked",
+                        "/api/boards/participating",
+                        "/api/boards/created"
+                ))
+                .build();
+
+        return ResponseEntity.ok(response);
+    }
+
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    static class DashboardResponse {
+        private Long userId;
+        private String name;
+        private GenderType gender;
+        private int age;
+        private List<String> links;
+    }
+
 
 }

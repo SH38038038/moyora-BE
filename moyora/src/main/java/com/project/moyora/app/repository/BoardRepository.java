@@ -4,12 +4,15 @@ import com.project.moyora.app.domain.Board;
 import com.project.moyora.app.domain.MeetType;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.global.tag.InterestTag;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Set;
 
 public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecificationExecutor<Board> {
     List<Board> findAllByOrderByCreatedTimeDesc(); // 최신순 조회
@@ -23,6 +26,15 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
     List<Board> searchBoardsWithUserTags(@Param("keyword") String keyword,
                                          @Param("tag") InterestTag tag,
                                          @Param("meetType") MeetType meetType);
+
+    Page<Board> findDistinctByTagsInOrderByCreatedTimeDesc(Set<InterestTag> tags, Pageable pageable);
+
+    @Query(value = "SELECT tags FROM board_interest_tags GROUP BY tags ORDER BY COUNT(*) DESC LIMIT :limit", nativeQuery = true)
+    List<String> findPopularTags(@Param("limit") int limit);
+
+    @Query("SELECT b FROM Board b ORDER BY function('RAND')")
+    Page<Board> findRandomBoards(Pageable pageable);
+
 
 }
 

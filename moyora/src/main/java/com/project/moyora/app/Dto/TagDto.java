@@ -1,11 +1,13 @@
 package com.project.moyora.app.Dto;
 
 import com.project.moyora.global.tag.InterestTag;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
+@Builder
 public class TagDto {
     private String section;
     private String name;
@@ -19,10 +21,19 @@ public class TagDto {
     }
 
     public static TagDto from(InterestTag tag) {
-        return new TagDto(
-                tag.getSection(),
-                tag.name(),
-                tag.getDisplayName()
-        );
+        if (tag == null) {
+            System.out.println("[DEBUG] TagDto.from() 호출 시 tag가 null입니다!");
+            throw new IllegalArgumentException("InterestTag 값이 null입니다.");
+        } else {
+            System.out.println("[DEBUG] TagDto.from() 호출 시 tag = " + tag.name());
+        }
+        return TagDto.builder()
+                .section(tag.getSection())
+                .name(tag.name())
+                .displayName(tag.getDisplayName())
+                .build();
     }
+
+
+
 }
