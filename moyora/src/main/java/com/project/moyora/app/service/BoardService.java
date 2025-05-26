@@ -64,7 +64,16 @@ public class BoardService {
                 .updateTime(LocalDateTime.now())
                 .build();
 
-        return toDto(boardRepository.save(board));
+        Board savedBoard = boardRepository.save(board);
+
+        BoardApplication application = BoardApplication.builder()
+                .board(savedBoard)
+                .applicant(currentUser)
+                .status(ApplicationStatus.LOCKED)
+                .build();
+        boardApplicationRepository.save(application);
+
+        return new BoardDto(savedBoard);
     }
 
 
@@ -91,7 +100,7 @@ public class BoardService {
         // BoardDto 생성
         return new BoardDto(
                 board.getId(),
-                board.getWriter().getName(),
+                new UserSummaryDto(board.getWriter()),
                 board.getTitle(),
                 board.getGenderType(),
                 board.getMinAge(),
@@ -198,7 +207,7 @@ public class BoardService {
 
         return new BoardDto(
                 board.getId(),
-                board.getWriter().getName(),
+                new UserSummaryDto(board.getWriter()),
                 board.getTitle(),
                 board.getGenderType(),
                 board.getMinAge(),
@@ -241,7 +250,8 @@ public class BoardService {
                     board.getHowMany(),
                     board.getParticipation(),
                     "/boards/" + board.getId(),
-                    liked
+                    liked,
+                    board.isConfirmed()
             );
 
         }).collect(Collectors.toList());
@@ -266,7 +276,8 @@ public class BoardService {
                 board.getHowMany(),
                 board.getParticipation(),
                 "/boards/" + board.getId(),
-                liked
+                liked,
+                board.isConfirmed()
         );
 
 
@@ -348,13 +359,15 @@ public class BoardService {
 
     public List<Board> searchBoards(BoardSearchRequest request) {
         String keyword = request.getTitle();
-        if (keyword.isBlank()) {
-            keyword = "%";
+        if (keyword == null || keyword.isBlank()) {
+            keyword = null; // "%" 아님 — JPQL에서는 null 체크로 필터링 제어
         }
         return boardRepository.searchBoardsWithUserTags(
                 keyword,
                 request.getInterestTag(),
-                request.getMeetType()
+                request.getMeetType(),
+                request.getMeetDetail()
         );
     }
+
 }

@@ -17,6 +17,7 @@ public class ApplicationResponseDto {
     private String applicantName;
     private int applicantAge;
     private String applicantGender;
+    private boolean applicantVerified;
     private List<TagDto> applicantInterestTags;
     private ApplicationStatus status;
 
@@ -28,6 +29,7 @@ public class ApplicationResponseDto {
                 applicant.getName(),
                 applicant.getAge(),
                 applicant.getGender() != null ? applicant.getGender().name() : null,
+                applicant.getVerified(),
                 applicant.getInterestTags().stream()
                         .map(TagDto::from)
                         .collect(Collectors.toList()),

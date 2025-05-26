@@ -1,5 +1,6 @@
 package com.project.moyora.app.Dto;
 
+import com.project.moyora.app.domain.ApplicationStatus;
 import com.project.moyora.app.domain.Notice;
 import lombok.*;
 
@@ -20,6 +21,8 @@ public class NoticeDto {
     private LocalDateTime createdTime;
     private List<CommentDto> comments;
 
+    private List<Participant> participants;
+
     public static NoticeDto fromEntity(Notice notice) {
         return NoticeDto.builder()
                 .id(notice.getId())
@@ -32,9 +35,14 @@ public class NoticeDto {
                                 .map(CommentDto::fromEntity)
                                 .collect(Collectors.toList())
                 )
+                .participants(
+                        notice.getBoard().getApplications().stream()
+                                .filter(app -> app.getStatus() == ApplicationStatus.LOCKED)
+                                .map(Participant::fromEntity)
+                                .collect(Collectors.toList())
+                )
                 .build();
     }
-
     public NoticeDto(Long id, String title, String content, LocalDateTime createdTime ) {
         this.id = id;
         this.title = title;

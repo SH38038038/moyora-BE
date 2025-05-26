@@ -32,6 +32,11 @@ public class NoticeServiceImpl implements NoticeService {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
 
+        // 게시판에 이미 공지가 있으면 생성 불가
+        if (noticeRepository.existsByBoard(board)) {
+            throw new IllegalStateException("이미 해당 게시판에 공지사항이 존재합니다.");
+        }
+
         Notice notice = Notice.builder()
                 .title(request.getTitle())
                 .content(request.getContent())
@@ -41,64 +46,18 @@ public class NoticeServiceImpl implements NoticeService {
 
         noticeRepository.save(notice);
 
-        // Lazy 로딩 문제 해결: writer + comments까지 로딩
         Notice saved = noticeRepository.findByIdWithWriterAndComments(notice.getId())
                 .orElseThrow(() -> new IllegalStateException("공지 저장 실패"));
 
         return NoticeDto.fromEntity(saved);
     }
 
+    @Transactional
     @Override
-    public List<NoticeDto> getAllNotices() {
-        return noticeRepository.findAllWithWriterAndComments().stream()
-                .map(NoticeDto::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<NoticeDto> getNoticesByBoard(Long boardId) {
-        return noticeRepository.findAllByBoardIdWithWriterAndComments(boardId).stream()
-                .map(NoticeDto::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public NoticeDto getNotice(Long id) {
-        Notice notice = noticeRepository.findByIdWithWriterAndComments(id)
-                .orElseThrow(() -> new EntityNotFoundException("공지글을 찾을 수 없습니다."));
+    public NoticeDto getNoticeByBoard(Long boardId) {
+        Notice notice = noticeRepository.findByBoardIdWithWriterAndComments(boardId)
+                .orElseThrow(() -> new EntityNotFoundException("공지사항이 존재하지 않습니다."));
         return NoticeDto.fromEntity(notice);
-    }
-
-
-    @Override
-    public void addComment(Long noticeId, String content, User user) {
-        Notice notice = noticeRepository.findById(noticeId)
-                .orElseThrow(() -> new EntityNotFoundException("공지글을 찾을 수 없습니다."));
-
-        NoticeComment comment = NoticeComment.builder()
-                .notice(notice)
-                .writer(user)
-                .content(content)
-                .build();
-        commentRepository.save(comment);
-    }
-/*
-    @Override
-    public List<NoticeDto> getNoticesByBoard(Long boardId) {
-        List<Notice> notices = noticeRepository.findByBoardId(boardId);  // 해당 게시판에 속하는 공지 조회
-        return notices.stream()
-                .map(this::convertToDto)
-                .collect(Collectors.toList());
-    }
-*/
-    // Notice 엔티티를 NoticeDto로 변환하는 메서드
-    private NoticeDto convertToDto(Notice notice) {
-        return new NoticeDto(
-                notice.getId(),
-                notice.getTitle(),
-                notice.getContent(),
-                notice.getCreatedTime()
-        );
     }
 
     @Transactional
@@ -113,21 +72,25 @@ public class NoticeServiceImpl implements NoticeService {
 
         notice.setTitle(noticeRequest.getTitle());
         notice.setContent(noticeRequest.getContent());
-        Notice updatedNotice = noticeRepository.save(notice);
-
-        return new NoticeDto(updatedNotice.getId(), updatedNotice.getTitle(), updatedNotice.getContent(), updatedNotice.getCreatedTime());
+        return NoticeDto.fromEntity(notice);
     }
 
-    @Transactional
     @Override
     public void deleteNotice(Long noticeId, User user) {
+        throw new UnsupportedOperationException("공지사항은 삭제할 수 없습니다.");
+    }
+
+    @Override
+    public void addComment(Long noticeId, String content, User user) {
         Notice notice = noticeRepository.findById(noticeId)
-                .orElseThrow(() -> new ResourceNotFoundException("공지사항을 찾을 수 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("공지글을 찾을 수 없습니다."));
 
-        if (!notice.getWriter().equals(user)) {
-            throw new AccessDeniedException("공지사항 삭제 권한이 없습니다.");
-        }
+        NoticeComment comment = NoticeComment.builder()
+                .notice(notice)
+                .writer(user)
+                .content(content)
+                .build();
 
-        noticeRepository.delete(notice);
+        commentRepository.save(comment);
     }
 }

@@ -11,7 +11,9 @@ import lombok.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Getter
 @Setter
@@ -24,6 +26,7 @@ public class Board {
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "user_id", nullable = false)
     private User writer;
 
     private String title;
@@ -36,10 +39,6 @@ public class Board {
 
     private LocalDate startDate;
     private LocalDate endDate;
-/*
-    @Enumerated(EnumType.STRING)
-    private InterestTag interestTag;
- */
 
     @ElementCollection(targetClass = InterestTag.class, fetch = FetchType.EAGER)
     @CollectionTable(name = "board_interest_tags", joinColumns = @JoinColumn(name = "board_id"))
@@ -58,13 +57,14 @@ public class Board {
 
     private MeetType meetType;
 
+    @Column(name = "meet_detail")
     private String meetDetail;
 
     private LocalDateTime createdTime;
     private LocalDateTime updateTime;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BoardApplication> applications = new ArrayList<>();
+    private Set<BoardApplication> applications = new HashSet<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Like> likes = new ArrayList<>(); // 찜한 사용자 목록

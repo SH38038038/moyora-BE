@@ -1,5 +1,6 @@
 package com.project.moyora;
 
+import com.nimbusds.jose.util.Pair;
 import com.project.moyora.app.domain.*;
 import com.project.moyora.app.repository.UserRepository;
 import com.project.moyora.app.repository.VerificationRepository;
@@ -16,8 +17,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @SpringBootTest
-@Transactional
-@Rollback(false)
 class MoyoraApplicationTests {
 
     @Autowired
@@ -27,31 +26,25 @@ class MoyoraApplicationTests {
     private TokenService tokenService;
 
     @Test
-    void generateTestUsersByAgeAndGender() {
-        int currentYear = LocalDate.now().getYear();
-        int[] ageGroups = {20, 30, 40, 50};
+    void generateTestUsersBySpecificAgeAndGender() {
 
-        for (int age : ageGroups) {
-            int birthYear = currentYear - (age + 5); // 중간 나이 기준 (25세, 35세 등)
 
-            for (GenderType gender : List.of(GenderType.MALE, GenderType.FEMALE)) {
-                for (int i = 1; i <= 2; i++) {
-                    String genderCode = gender == GenderType.MALE ? "m" : "f";
+        // ✅ 관리자 계정 생성
+        if (userRepository.findByEmail("admin@ex.com").isEmpty()) {
+            User admin = User.builder()
+                    .name("admin")
+                    .email("admin@ex.com")
+                    .birth(LocalDate.of(2000, 1, 1))
+                    .gender(GenderType.FEMALE)
+                    .roleType(RoleType.ADMIN)
+                    .verified(true)
+                    .verificationStatus(VerificationStatus.ACCEPTED)
+                    .idCardUrl("1")
+                    .build();
 
-                    User user = User.builder()
-                            .name(age + "대_" + genderCode + i)
-                            .email("user" + age + genderCode + i + "@ex.com")
-                            .birth(LocalDate.of(birthYear, 1, 1))
-                            .gender(gender)
-                            .roleType(RoleType.USER)
-                            .build();
+            admin.setRefreshToken(tokenService.createRefreshToken());
 
-                    String refreshToken = tokenService.createRefreshToken();
-                    user.setRefreshToken(refreshToken);
-
-                    userRepository.save(user);
-                }
-            }
+            userRepository.save(admin);
         }
     }
 }

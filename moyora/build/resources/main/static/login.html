@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 로그인</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .login-box {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            width: 320px;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+        input[type="email"] {
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            width: 100%;
+            background-color: #007BFF;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .error {
+            color: red;
+            text-align: center;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+<div class="login-box">
+    <h2>관리자 로그인</h2>
+    <input type="email" id="email" placeholder="관리자 이메일 입력" required />
+    <button type="button" onclick="login()">로그인</button>
+    <div class="error" id="errorMessage"></div>
+</div>
+
+<script>
+    function login() {
+        const email = document.getElementById("email").value;
+        const errorDiv = document.getElementById("errorMessage");
+        errorDiv.textContent = "";
+
+        fetch("/admin/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ email: email })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.text().then(text => { throw new Error(text); });
+            }
+            return response.json();
+        })
+        .then(data => {
+            localStorage.setItem("accessToken", data.accessToken); // JWT 저장
+            window.location.href = "/admin-dashboard.html"; // 대시보드로 이동
+        })
+        .catch(err => {
+            errorDiv.textContent = err.message || "로그인 실패";
+        });
+    }
+</script>
+</body>
+</html>

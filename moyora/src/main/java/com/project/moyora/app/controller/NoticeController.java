@@ -47,31 +47,21 @@ public class NoticeController {
         return ApiResponseTemplete.success(SuccessCode.CREATE_POST_SUCCESS, notice);
     }
 
-
     // 공지사항 조회 (단건)
-    @GetMapping("/{noticeId}")
-    public ResponseEntity<ApiResponseTemplete<NoticeDto>> getNotice(
-            @PathVariable Long noticeId) {
-
-        NoticeDto notice = noticeService.getNotice(noticeId);
-        return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, notice);
-    }
-
-    // 공지사항 조회 (전체)
     @GetMapping("/board/{boardId}")
-    public ResponseEntity<ApiResponseTemplete<List<NoticeDto>>> getNoticesByBoard(
+    public ResponseEntity<ApiResponseTemplete<NoticeDto>> getNoticeByBoard(
             @PathVariable Long boardId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        BoardDto boardDto = new BoardDto(boardId);  // BoardDto 생성
-        Board board = boardService.getBoardEntityFromDto(boardDto);  // Board 엔티티로 변환
+        BoardDto boardDto = new BoardDto(boardId);
+        Board board = boardService.getBoardEntityFromDto(boardDto);
 
         if (!boardService.isUserParticipantOrWriter(board, userDetails.getUser())) {
             throw new AccessDeniedException("이 게시판에 참여한 사용자만 공지사항을 조회할 수 있습니다.");
         }
 
-        List<NoticeDto> notices = noticeService.getNoticesByBoard(boardId);
-        return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, notices);
+        NoticeDto notice = noticeService.getNoticeByBoard(boardId);
+        return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, notice);
     }
 
     // 공지사항 수정
@@ -85,14 +75,10 @@ public class NoticeController {
         return ApiResponseTemplete.success(SuccessCode.UPDATE_POST_SUCCESS, updatedNotice);
     }
 
-    // 공지사항 삭제
+    // 공지사항 삭제 ❌ 금지
     @DeleteMapping("/{noticeId}")
-    public ResponseEntity<ApiResponseTemplete<String>> deleteNotice(
-            @PathVariable Long noticeId,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-
-        noticeService.deleteNotice(noticeId, userDetails.getUser());
-        return ApiResponseTemplete.success(SuccessCode.DELETE_REPORT_SUCCESS, "공지사항이 삭제되었습니다.");
+    public ResponseEntity<ApiResponseTemplete<String>> deleteNotice(@PathVariable Long noticeId) {
+        throw new UnsupportedOperationException("공지사항은 삭제할 수 없습니다.");
     }
 
     // 댓글 추가
@@ -101,15 +87,13 @@ public class NoticeController {
             @PathVariable Long boardId, @PathVariable Long noticeId,
             @RequestBody CommentRequest request, @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        // BoardDto를 id로 생성하여 Board 엔티티로 변환
-        BoardDto boardDto = new BoardDto(boardId);  // BoardDto 생성
-        Board board = boardService.getBoardEntityFromDto(boardDto);  // Board 엔티티로 변환
+        BoardDto boardDto = new BoardDto(boardId);
+        Board board = boardService.getBoardEntityFromDto(boardDto);
 
         if (!boardService.isUserParticipantOrWriter(board, userDetails.getUser())) {
             throw new AccessDeniedException("이 게시판에 참여한 사용자만 댓글을 작성할 수 있습니다.");
         }
 
-        // 댓글 추가
         noticeService.addComment(noticeId, request.getContent(), userDetails.getUser());
         return ApiResponseTemplete.success(SuccessCode.CREATE_POST_SUCCESS, "댓글이 등록되었습니다.");
     }

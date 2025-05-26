@@ -6,6 +6,7 @@ import com.project.moyora.app.domain.Verification;
 import com.project.moyora.app.domain.VerificationStatus;
 import com.project.moyora.app.repository.UserRepository;
 import com.project.moyora.app.repository.VerificationRepository;
+import com.project.moyora.global.config.EncryptionUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,12 +24,14 @@ public class VerificationService {
     @Autowired
     private UserRepository userRepository;
 
+    private final EncryptionUtil encryptionUtil;
+
     // 인증 요청 리스트 조회 (PENDING 상태만)
     @Transactional
     public List<VerificationResponse> getPendingVerifications() {
         List<Verification> verifications = verificationRepository.findAllByStatus(VerificationStatus.PENDING);
         return verifications.stream()
-                .map(v -> new VerificationResponse(v.getId(), v.getUser().getEmail(), v.getUser().getIdCardUrl(),
+                .map(v -> new VerificationResponse(v.getId(), v.getUser().getEmail(), decryptIdCardUrl(v.getUser().getIdCardUrl()),
                         v.getUser().getBirth(), v.getUser().getGender(), v.getStatus(),
                         "/api/verification/details/" + v.getId())) // 세부 조회 URL 추가
                 .collect(Collectors.toList());
@@ -40,8 +43,17 @@ public class VerificationService {
         Verification verification = verificationRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("인증 요청을 찾을 수 없습니다."));
 
-        return new VerificationResponse(verification.getId(), verification.getUser().getEmail(), verification.getUser().getIdCardUrl(),
+        return new VerificationResponse(verification.getId(), verification.getUser().getEmail(), decryptIdCardUrl(verification.getUser().getIdCardUrl()),
                 verification.getUser().getBirth(), verification.getUser().getGender(), verification.getStatus(),"/api/verification/details/" + verification.getId());
+    }
+
+    private String decryptIdCardUrl(String encryptedUrl) {
+        if (encryptedUrl == null) return null;
+        try {
+            return encryptionUtil.decrypt(encryptedUrl);
+        } catch (Exception e) {
+            return "";
+        }
     }
 
     // 인증 수락

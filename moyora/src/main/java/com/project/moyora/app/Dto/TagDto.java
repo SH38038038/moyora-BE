@@ -34,6 +34,10 @@ public class TagDto {
                 .build();
     }
 
+    public TagDto() {
+
+    }
+
 
 
 }

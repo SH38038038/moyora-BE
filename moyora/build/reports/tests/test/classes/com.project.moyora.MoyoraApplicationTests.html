@@ -41,7 +41,7 @@
 </td>
 <td>
 <div class="infoBox" id="duration">
-<div class="counter">0.756s</div>
+<div class="counter">1.467s</div>
 <p>duration</p>
 </div>
 </td>
@@ -81,8 +81,8 @@
 </tr>
 </thead>
 <tr>
-<td class="success">generateTestUsersByAgeAndGender()</td>
-<td class="success">0.756s</td>
+<td class="success">generateTestUsersBySpecificAgeAndGender()</td>
+<td class="success">1.467s</td>
 <td class="success">passed</td>
 </tr>
 </table>
@@ -90,8 +90,8 @@
 <div class="tab">
 <h2>Standard output</h2>
 <span class="code">
-<pre>15:14:49.616 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.project.moyora.MoyoraApplicationTests]: MoyoraApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
-15:14:49.789 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.project.moyora.MoyoraApplication for test class com.project.moyora.MoyoraApplicationTests
+<pre>14:57:06.031 [Test worker] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.project.moyora.MoyoraApplicationTests]: MoyoraApplicationTests does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+14:57:06.181 [Test worker] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.project.moyora.MoyoraApplication for test class com.project.moyora.MoyoraApplicationTests
 
   .   ____          _            __ _ _
  /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
@@ -102,25 +102,36 @@
 
  :: Spring Boot ::                (v3.3.1)
 
-2025-05-20T15:14:50.324+09:00  INFO 19408 --- [moyora] [    Test worker] c.project.moyora.MoyoraApplicationTests  : Starting MoyoraApplicationTests using Java 21.0.2 with PID 19408 (started by seohy in C:\github\moyora-BE\moyora)
-2025-05-20T15:14:50.324+09:00  INFO 19408 --- [moyora] [    Test worker] c.project.moyora.MoyoraApplicationTests  : The following 1 profile is active: &quot;jwt&quot;
-2025-05-20T15:14:51.482+09:00  INFO 19408 --- [moyora] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
-2025-05-20T15:14:51.602+09:00  INFO 19408 --- [moyora] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 115 ms. Found 9 JPA repository interfaces.
-2025-05-20T15:14:52.534+09:00  INFO 19408 --- [moyora] [    Test worker] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
-2025-05-20T15:14:52.644+09:00  INFO 19408 --- [moyora] [    Test worker] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.2.Final
-2025-05-20T15:14:52.707+09:00  INFO 19408 --- [moyora] [    Test worker] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
-2025-05-20T15:14:53.163+09:00  INFO 19408 --- [moyora] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
-2025-05-20T15:14:53.194+09:00  INFO 19408 --- [moyora] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
-2025-05-20T15:14:53.620+09:00  INFO 19408 --- [moyora] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@1253b822
-2025-05-20T15:14:53.620+09:00  INFO 19408 --- [moyora] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
-2025-05-20T15:14:53.697+09:00  WARN 19408 --- [moyora] [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
-2025-05-20T15:14:54.935+09:00  INFO 19408 --- [moyora] [    Test worker] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
-2025-05-20T15:14:55.171+09:00  INFO 19408 --- [moyora] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
-2025-05-20T15:14:55.585+09:00  INFO 19408 --- [moyora] [    Test worker] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
-2025-05-20T15:14:56.513+09:00  INFO 19408 --- [moyora] [    Test worker] c.p.moyora.global.security.TokenService  : ✅ jwt.access.expiration: 1800000
-2025-05-20T15:14:56.513+09:00  INFO 19408 --- [moyora] [    Test worker] c.p.moyora.global.security.TokenService  : ✅ jwt.refresh.expiration: 36000000
-2025-05-20T15:14:56.513+09:00  INFO 19408 --- [moyora] [    Test worker] c.p.moyora.global.security.TokenService  : ✅ jwt.secret: f4e6cdb3bfe18ef04ffe31d054a56099649a10d651aa5e7e719276b9a6787cc4c5020edbf80b705724ce5de1ae77dd9487f5bc5ba29de447f7b527210f595346
-2025-05-20T15:14:58.214+09:00  INFO 19408 --- [moyora] [    Test worker] c.project.moyora.MoyoraApplicationTests  : Started MoyoraApplicationTests in 8.258 seconds (process running for 9.762)
+2025-05-26T14:57:06.736+09:00  INFO 13812 --- [moyora] [    Test worker] c.project.moyora.MoyoraApplicationTests  : Starting MoyoraApplicationTests using Java 21.0.2 with PID 13812 (started by seohy in C:\github\moyora-BE\moyora)
+2025-05-26T14:57:06.738+09:00  INFO 13812 --- [moyora] [    Test worker] c.project.moyora.MoyoraApplicationTests  : The following 1 profile is active: &quot;jwt&quot;
+2025-05-26T14:57:08.112+09:00  INFO 13812 --- [moyora] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-05-26T14:57:08.116+09:00  INFO 13812 --- [moyora] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2025-05-26T14:57:08.384+09:00  INFO 13812 --- [moyora] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 255 ms. Found 9 JPA repository interfaces.
+2025-05-26T14:57:08.417+09:00  INFO 13812 --- [moyora] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2025-05-26T14:57:08.420+09:00  INFO 13812 --- [moyora] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2025-05-26T14:57:08.442+09:00  INFO 13812 --- [moyora] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.project.moyora.app.repository.ApplicationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-05-26T14:57:08.442+09:00  INFO 13812 --- [moyora] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.project.moyora.app.repository.BoardApplicationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-05-26T14:57:08.443+09:00  INFO 13812 --- [moyora] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.project.moyora.app.repository.BoardRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-05-26T14:57:08.445+09:00  INFO 13812 --- [moyora] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.project.moyora.app.repository.LikeRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-05-26T14:57:08.446+09:00  INFO 13812 --- [moyora] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.project.moyora.app.repository.NoticeCommentRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-05-26T14:57:08.446+09:00  INFO 13812 --- [moyora] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.project.moyora.app.repository.NoticeRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-05-26T14:57:08.447+09:00  INFO 13812 --- [moyora] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.project.moyora.app.repository.ReportRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-05-26T14:57:08.448+09:00  INFO 13812 --- [moyora] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.project.moyora.app.repository.UserRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-05-26T14:57:08.449+09:00  INFO 13812 --- [moyora] [    Test worker] .RepositoryConfigurationExtensionSupport : Spring Data Redis - Could not safely identify store assignment for repository candidate interface com.project.moyora.app.repository.VerificationRepository; If you want this repository to be a Redis repository, consider annotating your entities with one of these annotations: org.springframework.data.redis.core.RedisHash (preferred), or consider extending one of the following types with your repository: org.springframework.data.keyvalue.repository.KeyValueRepository
+2025-05-26T14:57:08.449+09:00  INFO 13812 --- [moyora] [    Test worker] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 18 ms. Found 0 Redis repository interfaces.
+2025-05-26T14:57:09.449+09:00  INFO 13812 --- [moyora] [    Test worker] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2025-05-26T14:57:09.542+09:00  INFO 13812 --- [moyora] [    Test worker] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.2.Final
+2025-05-26T14:57:09.601+09:00  INFO 13812 --- [moyora] [    Test worker] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2025-05-26T14:57:10.080+09:00  INFO 13812 --- [moyora] [    Test worker] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2025-05-26T14:57:10.117+09:00  INFO 13812 --- [moyora] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2025-05-26T14:57:10.605+09:00  INFO 13812 --- [moyora] [    Test worker] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection com.mysql.cj.jdbc.ConnectionImpl@39b95a80
+2025-05-26T14:57:10.608+09:00  INFO 13812 --- [moyora] [    Test worker] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2025-05-26T14:57:10.685+09:00  WARN 13812 --- [moyora] [    Test worker] org.hibernate.orm.deprecation            : HHH90000025: MySQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2025-05-26T14:57:12.136+09:00  INFO 13812 --- [moyora] [    Test worker] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+2025-05-26T14:57:12.439+09:00  INFO 13812 --- [moyora] [    Test worker] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2025-05-26T14:57:12.963+09:00  INFO 13812 --- [moyora] [    Test worker] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2025-05-26T14:57:16.527+09:00  WARN 13812 --- [moyora] [    Test worker] ion$DefaultTemplateResolverConfiguration : Cannot find template location: classpath:/templates/ (please add some templates, check your Thymeleaf configuration, or set spring.thymeleaf.check-template-location=false)
+2025-05-26T14:57:17.288+09:00  INFO 13812 --- [moyora] [    Test worker] c.project.moyora.MoyoraApplicationTests  : Started MoyoraApplicationTests in 10.925 seconds (process running for 12.42)
 </pre>
 </span>
 </div>
@@ -142,7 +153,7 @@ WARNING: Dynamic loading of agents will be disallowed by default in a future rel
 <input id="line-wrapping-toggle" type="checkbox" autocomplete="off"/>
 </label>
 </div>Generated by 
-<a href="https://www.gradle.org">Gradle 8.13</a> at 2025. 5. 20. 오후 3:14:59</p>
+<a href="https://www.gradle.org">Gradle 8.13</a> at 2025. 5. 26. 오후 2:57:19</p>
 </div>
 </div>
 </body>

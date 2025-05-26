@@ -3,10 +3,7 @@ package com.project.moyora.app.controller;
 import com.project.moyora.app.Dto.BoardListDto;
 import com.project.moyora.app.Dto.TagDto;
 import com.project.moyora.app.Dto.UserInterestTagsDto;
-import com.project.moyora.app.domain.Board;
-import com.project.moyora.app.domain.GenderType;
-import com.project.moyora.app.domain.Like;
-import com.project.moyora.app.domain.User;
+import com.project.moyora.app.domain.*;
 import com.project.moyora.app.repository.BoardApplicationRepository;
 import com.project.moyora.app.repository.BoardRepository;
 import com.project.moyora.app.repository.LikeRepository;
@@ -99,12 +96,44 @@ public class MyPageController {
 
 
     // 참여 중인 모임
+    @Transactional
     @GetMapping("/boards/participating")
     public ResponseEntity<ApiResponseTemplete<List<BoardListDto>>> getParticipatingBoards(Principal principal) {
         User user = getUserByPrincipal(principal);
-        List<Board> boards = boardApplicationRepository.findAcceptedBoardsByUser(user);
-        return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, toDtoList(boards, user));
+
+        // ApplicationStatus.LOCKED 상태인 지원 리스트 조회
+        List<BoardApplication> lockedApplications = boardApplicationRepository.findByApplicantAndStatus(user, ApplicationStatus.LOCKED);
+        List<Board> lockedBoards = lockedApplications.stream()
+                .map(BoardApplication::getBoard)
+                .collect(Collectors.toList());
+
+        // 본인이 작성한 모임도 참여 중으로 간주
+        List<Board> createdBoards = boardRepository.findByWriter(user);
+
+        // 둘을 합쳐서 참여 중 모임 리스트 구성
+        List<Board> combined = new ArrayList<>(lockedBoards);
+        combined.addAll(createdBoards);
+
+        return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, toDtoList(combined, user));
     }
+
+    // 신청한 모임
+    @Transactional
+    @GetMapping("/boards/applying")
+    public ResponseEntity<ApiResponseTemplete<List<BoardListDto>>> getApplyingBoards(Principal principal) {
+        User user = getUserByPrincipal(principal);
+
+        // WAITING, ACCEPTED 상태의 지원 리스트 조회
+        List<BoardApplication> applyingApplications = boardApplicationRepository.findByApplicantAndStatusIn(
+                user, List.of(ApplicationStatus.WAITING, ApplicationStatus.ACCEPTED));
+
+        List<Board> applyingBoards = applyingApplications.stream()
+                .map(BoardApplication::getBoard)
+                .collect(Collectors.toList());
+
+        return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, toDtoList(applyingBoards, user));
+    }
+
 
     // 찜한 모임
     @GetMapping("/boards/liked")
@@ -145,7 +174,8 @@ public class MyPageController {
                     board.getHowMany(),
                     board.getParticipation(),
                     "/api/boards/" + board.getId(),
-                    liked
+                    liked,
+                    board.isConfirmed()
             );
         }).collect(Collectors.toList());
     }
@@ -165,6 +195,7 @@ public class MyPageController {
                         "/api/image/upload/icard",
                         "/api/interest-tag",
                         "/api/boards/liked",
+                        "/api/boards/applying",
                         "/api/boards/participating",
                         "/api/boards/created"
                 ))

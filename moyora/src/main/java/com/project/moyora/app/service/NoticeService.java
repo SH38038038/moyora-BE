@@ -8,10 +8,9 @@ import java.util.List;
 
 public interface NoticeService {
     NoticeDto createNotice(Long boardId, NoticeRequest request, User user);
-    List<NoticeDto> getAllNotices();
-    NoticeDto getNotice(Long id);
+    NoticeDto getNoticeByBoard(Long boardId);
     void addComment(Long noticeId, String content, User user);
-    List<NoticeDto> getNoticesByBoard(Long boardId);
     NoticeDto updateNotice(Long noticeId, NoticeRequest noticeRequest, User user);
     void deleteNotice(Long noticeId, User user);
 }
+

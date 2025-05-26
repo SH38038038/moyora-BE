@@ -25,7 +25,13 @@ public interface BoardApplicationRepository extends JpaRepository<BoardApplicati
     JOIN FETCH ba.applicant a
     LEFT JOIN FETCH a.interestTags
     WHERE ba.board = :board
-""")
+    """)
     List<BoardApplication> findWithApplicantAndTagsByBoard(@Param("board") Board board);
+
+    // 신청 상태인 게시글 조회 (WAITING, ACCEPTED)
+    List<BoardApplication> findByApplicantAndStatusIn(User applicant, List<ApplicationStatus> statuses);
+
+    // 참여 상태인 게시글 조회 (LOCKED)
+    List<BoardApplication> findByApplicantAndStatus(User applicant, ApplicationStatus status);
 
 }

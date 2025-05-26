@@ -30,6 +30,8 @@ public class BoardListDto {
     private String detailUrl;
 
     private boolean liked;
+    private boolean confirmed;  // 확정 여부 (참여 인원 다 찼을 때만 변경 가능)
+
 
     public static BoardListDto from(Board board) {
         List<TagDto> tagDtos = Collections.emptyList();
@@ -59,6 +61,8 @@ public class BoardListDto {
                 .participation(board.getParticipation())
                 .detailUrl("/boards/" + board.getId())
                 .liked(false)
+                .confirmed(board.isConfirmed())
                 .build();
+
     }
 }

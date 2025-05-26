@@ -48,3 +48,7 @@ spring:
 imgbb:
   api:
     key: 4a759f6c3a0006eb8275069c7af6938e
+
+app:
+  encryption:
+    key: AbCdEfGhIjKlMnOp

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 대시보드</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h2 { margin-top: 40px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #f4f4f4; }
+        button { padding: 6px 12px; margin-right: 5px; }
+    </style>
+</head>
+<body>
+
+<h1>관리자 대시보드</h1>
+
+<!-- 인증 요청 섹션 -->
+<h2>신분증 인증 요청</h2>
+<table id="verificationTable">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>이메일</th>
+        <th>생년월일</th>
+        <th>성별</th>
+        <th>신분증</th>
+        <th>상태</th>
+        <th>액션</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<!-- 신고 목록 섹션 -->
+<h2>신고 목록</h2>
+<table id="reportTable">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>신고 대상</th>
+        <th>내용</th>
+        <th>상태</th>
+        <th>액션</th>
+    </tr>
+    </thead>
+    <tbody></tbody>
+</table>
+
+<script>
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+        alert("로그인이 필요합니다.");
+        window.location.href = "/login.html";
+    }
+
+    // 공통 fetch 설정 함수
+    function authFetch(url, options = {}) {
+        options.headers = {
+            ...(options.headers || {}),
+            "Authorization": "Bearer " + token,
+            "Content-Type": "application/json"
+        };
+        return fetch(url, options);
+    }
+
+
+    // 인증 요청 불러오기
+    authFetch("/api/verification/pending")
+        .then(res => res.json())
+        .then(data => {
+            const rows = data.data.map(v => `
+                <tr>
+                    <td>${v.id}</td>
+                    <td>${v.email}</td>
+                    <td>${v.birth}</td>
+                    <td>${v.gender}</td>
+                    <td><a href="${v.idcardUrl}" target="_blank">보기</a></td>
+                    <td>${v.status}</td>
+                    <td>
+                        <button onclick="acceptVerification(${v.id})">수락</button>
+                        <button onclick="rejectVerification(${v.id})">거절</button>
+                    </td>
+                </tr>
+            `);
+            document.querySelector("#verificationTable tbody").innerHTML = rows.join("");
+        });
+
+    // 인증 수락
+    function acceptVerification(id) {
+        authFetch(`/api/verification/accept/${id}`, { method: "PUT" })
+            .then(() => alert("인증 수락 완료"))
+            .then(() => location.reload());
+    }
+
+    // 인증 거절
+    function rejectVerification(id) {
+        const reason = prompt("거절 사유를 입력하세요:");
+        if (reason) {
+            authFetch(`/api/verification/reject/${id}`, {
+                method: "PUT",
+                body: JSON.stringify({ reason })
+            })
+            .then(() => alert("인증 거절 완료"))
+            .then(() => location.reload());
+        }
+    }
+
+    // 신고 목록 불러오기
+    authFetch("/admin/reports")
+        .then(res => res.json())
+        .then(data => {
+            const rows = data.map(r => `
+                <tr>
+                    <td>${r.id}</td>
+                    <td>${r.target}</td>
+                    <td>${r.reason}</td>
+                    <td>${r.status}</td>
+                    <td>
+                        <button onclick="updateReportStatus(${r.id}, '처리완료')">처리완료</button>
+                        <button onclick="updateReportStatus(${r.id}, '보류')">보류</button>
+                    </td>
+                </tr>
+            `);
+            document.querySelector("#reportTable tbody").innerHTML = rows.join("");
+        });
+
+    // 신고 상태 변경
+    function updateReportStatus(id, status) {
+        authFetch(`/admin/reports/${id}/status`, {
+            method: "PATCH",
+            body: JSON.stringify({ status })
+        })
+        .then(() => alert("신고 상태 변경 완료"))
+        .then(() => location.reload());
+    }
+</script>
+
+</body>
+</html>

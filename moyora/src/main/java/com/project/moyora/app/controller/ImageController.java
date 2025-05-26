@@ -8,6 +8,7 @@ import com.project.moyora.app.domain.Verification;
 import com.project.moyora.app.domain.VerificationStatus;
 import com.project.moyora.app.repository.UserRepository;
 import com.project.moyora.app.repository.VerificationRepository;
+import com.project.moyora.global.config.EncryptionUtil;
 import com.project.moyora.global.exception.ErrorCode;
 import com.project.moyora.global.exception.SuccessCode;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;
@@ -44,6 +45,8 @@ public class ImageController {
     private final UserRepository userRepository;
     private final VerificationRepository verificationRepository;
     private final TokenService tokenService; // JWT로부터 사용자 추출
+    private final EncryptionUtil encryptionUtil;
+
 
     @Operation(
             summary = "신분증 이미지 업로드",
@@ -84,8 +87,9 @@ public class ImageController {
             JsonNode responseBody = new ObjectMapper().readTree(response.getBody());
             String imageUrl = responseBody.path("data").path("url").asText();
 
-            // 사용자 정보 업데이트
-            user.setIdCardUrl(imageUrl);
+            // 암호화 후 저장
+            String encryptedUrl = encryptionUtil.encrypt(imageUrl);
+            user.setIdCardUrl(encryptedUrl);
             user.setVerificationStatus(VerificationStatus.PENDING);
             userRepository.save(user);
 
