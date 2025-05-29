@@ -90,6 +90,7 @@ public class ReportService {
             if (report.getReportType() == ReportType.POST && report.getReportedBoard() != null) {
                 res.setReportedId(report.getReportedBoard().getId());
                 res.setReportedName(report.getReportedBoard().getTitle()); // 또는 작성자 이름 등으로 수정 가능
+                res.setReportedContent(report.getReportedBoard().getContent());
             } else if (report.getReportType() == ReportType.USER && report.getReportedUser() != null) {
                 res.setReportedId(report.getReportedUser().getId());
                 res.setReportedName(report.getReportedUser().getName());

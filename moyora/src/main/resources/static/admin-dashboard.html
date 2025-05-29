@@ -40,6 +40,8 @@
     <tr>
         <th>ID</th>
         <th>신고 대상</th>
+        <th>제목</th>
+        <th>내용</th>
         <th>내용</th>
         <th>상태</th>
         <th>액션</th>
@@ -55,7 +57,6 @@
         window.location.href = "/login.html";
     }
 
-    // 공통 fetch 설정 함수
     function authFetch(url, options = {}) {
         options.headers = {
             ...(options.headers || {}),
@@ -65,6 +66,11 @@
         return fetch(url, options);
     }
 
+    function formatTarget(type, id) {
+        if (type === 'POST') return `게시글 ID: ${id}`;
+        if (type === 'USER') return `유저 ID: ${id}`;
+        return '-';
+    }
 
     // 인증 요청 불러오기
     authFetch("/api/verification/pending")
@@ -87,14 +93,12 @@
             document.querySelector("#verificationTable tbody").innerHTML = rows.join("");
         });
 
-    // 인증 수락
     function acceptVerification(id) {
         authFetch(`/api/verification/accept/${id}`, { method: "PUT" })
             .then(() => alert("인증 수락 완료"))
             .then(() => location.reload());
     }
 
-    // 인증 거절
     function rejectVerification(id) {
         const reason = prompt("거절 사유를 입력하세요:");
         if (reason) {
@@ -109,30 +113,31 @@
 
     // 신고 목록 불러오기
     authFetch("/admin/reports")
-        .then(res => res.json())
-        .then(data => {
-            const rows = data.map(r => `
-                <tr>
-                    <td>${r.id}</td>
-                    <td>${r.target}</td>
-                    <td>${r.reason}</td>
-                    <td>${r.status}</td>
-                    <td>
-                        <button onclick="updateReportStatus(${r.id}, '처리완료')">처리완료</button>
-                        <button onclick="updateReportStatus(${r.id}, '보류')">보류</button>
-                    </td>
-                </tr>
-            `);
-            document.querySelector("#reportTable tbody").innerHTML = rows.join("");
-        });
+    .then(res => res.json())
+    .then(data => {
+        const rows = data.map(r => `
+            <tr>
+                <td>${r.id}</td>
+                <td>${formatTarget(r.reportType, r.reportedId)}</td>
+                <td>${r.reportedName || '-'}</td>
+                <td>${r.reportedContent || '-'}</td>
+                <td>${r.reason}</td>
+                <td>${r.status}</td>
+                <td>
+                    <button onclick="updateReportStatus(${r.id}, 'ACCEPTED')">신고 처리 완료</button>
+                    <button onclick="updateReportStatus(${r.id}, 'REJECTED')">신고 보류</button>
+                </td>
+            </tr>
+        `);
+        document.querySelector("#reportTable tbody").innerHTML = rows.join("");
+    });
 
-    // 신고 상태 변경
     function updateReportStatus(id, status) {
         authFetch(`/admin/reports/${id}/status`, {
             method: "PATCH",
             body: JSON.stringify({ status })
         })
-        .then(() => alert("신고 상태 변경 완료"))
+        .then(() => alert(`신고가 '${status}' 처리되었습니다.`))
         .then(() => location.reload());
     }
 </script>

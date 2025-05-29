@@ -21,5 +21,7 @@ public class ReportResponse {
     private Long reportedId;
     private String reportedName;
 
+    private String reportedContent;
+
     private LocalDateTime createdAt;
 }
