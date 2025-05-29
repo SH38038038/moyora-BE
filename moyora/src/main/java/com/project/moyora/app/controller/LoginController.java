@@ -51,6 +51,7 @@ public class LoginController {
         // 필요한 데이터만 포함해서 반환
         Map<String, String> responseData = new HashMap<>();
         responseData.put("email", user.getEmail());
+        responseData.put("userId", String.valueOf(user.getId()));
         responseData.put("accessToken", accessToken);
 
         // 성공적인 응답 반환

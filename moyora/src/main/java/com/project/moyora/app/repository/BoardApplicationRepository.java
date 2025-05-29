@@ -34,4 +34,6 @@ public interface BoardApplicationRepository extends JpaRepository<BoardApplicati
     // 참여 상태인 게시글 조회 (LOCKED)
     List<BoardApplication> findByApplicantAndStatus(User applicant, ApplicationStatus status);
 
+    Optional<BoardApplication> findByBoardIdAndApplicantId(Long boardId, Long applicantId);
+
 }

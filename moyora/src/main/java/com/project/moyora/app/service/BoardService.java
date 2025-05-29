@@ -55,7 +55,7 @@ public class BoardService {
                 .tags(dto.getTags().stream()
                         .map(tagDto -> InterestTag.from(
                                         tagDto.getSection(),
-                                        tagDto.getName(),         // 이 값은 enum 이름 (예: "HIKING") 이어야 함
+                                        tagDto.getName(),
                                         tagDto.getDisplayName())
                                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다: " + tagDto)))
                         .collect(Collectors.toList()))
@@ -73,8 +73,9 @@ public class BoardService {
                 .build();
         boardApplicationRepository.save(application);
 
-        return new BoardDto(savedBoard);
+        return new BoardDto(savedBoard, application);  // ✅ userStatus 포함
     }
+
 
 
     public List<BoardListDto> getAllBoards(User currentUser) {
@@ -90,14 +91,19 @@ public class BoardService {
 
 
     @Transactional(readOnly = true)
-    public BoardDto getBoardById(Long id) {
+    public BoardDto getBoardById(Long id, User currentUser) {
         Board board = boardRepository.findBoardById(id);
 
         List<TagDto> tagDtos = board.getTags().stream()
                 .map(tag -> new TagDto(tag.getSection(), tag.name(), tag.getDisplayName()))
                 .collect(Collectors.toList());
 
+        BoardApplication application = boardApplicationRepository
+                .findByBoardIdAndApplicantId(board.getId(), currentUser.getId())
+                .orElse(null);
+
         // BoardDto 생성
+        /*
         return new BoardDto(
                 board.getId(),
                 new UserSummaryDto(board.getWriter()),
@@ -115,7 +121,8 @@ public class BoardService {
                 board.getMeetDetail(),
                 board.getCreatedTime(),
                 board.getUpdateTime()
-        );
+        );*/
+        return new BoardDto(board, application);
     }
 
     // BoardDto를 Board 엔티티로 변환하는 메서드
@@ -164,7 +171,7 @@ public class BoardService {
     public BoardDto updateBoard(Long id, BoardDto dto, User currentUser) {
         Board board = boardRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Board not found"));
-        checkBoardWriter(board, currentUser);  // 중복 제거
+        checkBoardWriter(board, currentUser);
 
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());
@@ -175,13 +182,21 @@ public class BoardService {
         board.setTags(dto.getTags().stream()
                 .map(tagDto -> InterestTag.from(
                                 tagDto.getSection(),
-                                tagDto.getName(),         // 이 값은 enum 이름 (예: "HIKING") 이어야 함
+                                tagDto.getName(),
                                 tagDto.getDisplayName())
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다: " + tagDto)))
                 .collect(Collectors.toList()));
 
-        return toDto(boardRepository.save(board));
+        Board updatedBoard = boardRepository.save(board);
+
+        // 사용자 신청 정보 조회
+        BoardApplication application = boardApplicationRepository
+                .findByBoardIdAndApplicantId(updatedBoard.getId(), currentUser.getId())
+                .orElse(null);
+
+        return new BoardDto(updatedBoard, application);  // ✅ userStatus 포함
     }
+
 
     private void checkBoardWriter(Board board, User currentUser) {
         if (!board.getWriter().getId().equals(currentUser.getId())) {
@@ -200,11 +215,11 @@ public class BoardService {
         boardRepository.delete(board);
     }
 
-    private BoardDto toDto(Board board) {
+    private BoardDto toDto(Board board, User currentUser) {
         List<TagDto> tagDtos = board.getTags().stream()
                 .map(tag -> new TagDto(tag.getSection(), tag.name(), tag.getDisplayName()))
                 .collect(Collectors.toList());
-
+/*
         return new BoardDto(
                 board.getId(),
                 new UserSummaryDto(board.getWriter()),
@@ -223,7 +238,12 @@ public class BoardService {
                 board.getCreatedTime(),
                 board.getUpdateTime()
         );
+*/
+        BoardApplication application = boardApplicationRepository
+                .findByBoardIdAndApplicantId(board.getId(), currentUser.getId())
+                .orElse(null);
 
+        return new BoardDto(board, application);
     }
 
     public List<BoardListDto> toListDto(List<Board> boards, User currentUser) {

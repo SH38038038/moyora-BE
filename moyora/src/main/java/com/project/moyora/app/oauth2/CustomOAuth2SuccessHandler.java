@@ -114,6 +114,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
         Map<String, String> data = new LinkedHashMap<>();
         data.put("name", name);
         data.put("email", email);
+        data.put("userId", String.valueOf(user.getId()));
         data.put("accessToken", accessToken);
 
         // 2) ApiResponseTemplete<ResponseData> 객체 생성

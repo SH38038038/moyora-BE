@@ -71,6 +71,7 @@ public class TokenService {
 
         return Jwts.builder()
                 .subject(ACCESS_TOKEN_SUBJECT)
+                .claim("userId", user.getId())
                 .claim(EMAIL_CLAIM, user.getEmail())
                 .claim("role", user.getRoleType().name())
                 .issuedAt(new Date())

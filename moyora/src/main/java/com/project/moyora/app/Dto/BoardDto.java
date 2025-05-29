@@ -1,8 +1,6 @@
 package com.project.moyora.app.Dto;
 
-import com.project.moyora.app.domain.Board;
-import com.project.moyora.app.domain.GenderType;
-import com.project.moyora.app.domain.MeetType;
+import com.project.moyora.app.domain.*;
 import lombok.*;
 import java.util.List;
 import java.time.LocalDate;
@@ -31,12 +29,13 @@ public class BoardDto {
     private String meetDetail;
     private LocalDateTime createdTime;
     private LocalDateTime updateTime;
+    private ApplicationStatus userStatus;
 
     public BoardDto(Long id) {
         this.id = id;
     }
 
-    public BoardDto(Board board) {
+    public BoardDto(Board board, BoardApplication boardApplication) {
         this.id = board.getId();
         this.writer = new UserSummaryDto(board.getWriter()); // Board에 연결된 User 객체 사용
         this.title = board.getTitle();
@@ -53,6 +52,7 @@ public class BoardDto {
         this.meetDetail = board.getMeetDetail();
         this.createdTime = board.getCreatedTime();
         this.updateTime = board.getUpdateTime();
+        this.userStatus = boardApplication != null ? boardApplication.getStatus() : null;
     }
 }
 

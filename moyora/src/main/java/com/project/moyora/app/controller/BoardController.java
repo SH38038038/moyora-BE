@@ -60,9 +60,13 @@ public class BoardController {
 
     // ✅ 모집글 상세 조회
     @GetMapping("/{id}")
-    public ResponseEntity<BoardDto> getBoard(@PathVariable Long id) {
-        return ResponseEntity.ok(boardService.getBoardById(id));
+    public ResponseEntity<BoardDto> getBoard(@PathVariable Long id,
+                                             @AuthenticationPrincipal CustomUserDetails userDetails) {
+        User currentUser = userDetails.getUser();
+        return ResponseEntity.ok(boardService.getBoardById(id, currentUser));
     }
+
+
 
     // ✅ 모집글 수정
     @PutMapping("/{id}")
