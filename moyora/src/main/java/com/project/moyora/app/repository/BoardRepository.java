@@ -22,18 +22,21 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
 
     List<Board> findByWriter(User user);
 
-    @Query("SELECT b FROM Board b " +
-            "LEFT JOIN b.tags t " +
-            "WHERE (:keyword IS NULL OR b.title LIKE CONCAT('%', :keyword, '%')) " +
-            "AND (:interestTag IS NULL OR :interestTag IN elements(b.tags)) " +
-            "AND (:meetType IS NULL OR b.meetType = :meetType) " +
-            "AND (:meetDetail IS NULL OR b.meetDetail = :meetDetail)")
+    @Query("""
+    SELECT DISTINCT b FROM Board b
+    JOIN b.tags t
+    WHERE (:keyword IS NULL OR LOWER(b.title) LIKE LOWER(CONCAT('%', :keyword, '%')))
+    AND (:interestTags IS NULL OR t IN :interestTags)
+    AND (:meetType IS NULL OR b.meetType = :meetType)
+    AND (:meetDetail IS NULL OR b.meetDetail = :meetDetail)
+    """)
     List<Board> searchBoardsWithUserTags(
             @Param("keyword") String keyword,
-            @Param("interestTag") InterestTag interestTag,
+            @Param("interestTags") List<InterestTag> interestTags,
             @Param("meetType") MeetType meetType,
             @Param("meetDetail") String meetDetail
     );
+
 
     Page<Board> findDistinctByTagsInOrderByCreatedTimeDesc(Set<InterestTag> tags, Pageable pageable);
 

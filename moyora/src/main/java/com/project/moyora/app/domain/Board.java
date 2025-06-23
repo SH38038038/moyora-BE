@@ -55,6 +55,8 @@ public class Board {
 
     private boolean confirmed;  // 확정 여부 (참여 인원 다 찼을 때만 변경 가능)
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "meet_type")
     private MeetType meetType;
 
     @Column(name = "meet_detail")

@@ -19,32 +19,5 @@ import java.util.List;
 @SpringBootTest
 class MoyoraApplicationTests {
 
-    @Autowired
-    private UserRepository userRepository;
 
-    @Autowired
-    private TokenService tokenService;
-
-    @Test
-    void generateTestUsersBySpecificAgeAndGender() {
-
-
-        // ✅ 관리자 계정 생성
-        if (userRepository.findByEmail("admin@ex.com").isEmpty()) {
-            User admin = User.builder()
-                    .name("admin")
-                    .email("admin@ex.com")
-                    .birth(LocalDate.of(2000, 1, 1))
-                    .gender(GenderType.FEMALE)
-                    .roleType(RoleType.ADMIN)
-                    .verified(true)
-                    .verificationStatus(VerificationStatus.ACCEPTED)
-                    .idCardUrl("1")
-                    .build();
-
-            admin.setRefreshToken(tokenService.createRefreshToken());
-
-            userRepository.save(admin);
-        }
-    }
 }

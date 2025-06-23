@@ -21,6 +21,8 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
@@ -122,7 +124,7 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
                 ApiResponseTemplete.success(SuccessCode.LOGIN_USER_SUCCESS, data);
 
         ApiResponseTemplete<Map<String, String>> apiResponse = respEntity.getBody();
-
+/*
         // 3) 응답 인코딩 설정 (한글 깨짐 방지)
         response.setStatus(HttpServletResponse.SC_OK);
         response.setCharacterEncoding("UTF-8");
@@ -130,5 +132,21 @@ public class CustomOAuth2SuccessHandler implements AuthenticationSuccessHandler 
 
         // 4) JSON으로 출력
         new ObjectMapper().writeValue(response.getWriter(), apiResponse);
+    */
+        // 앱으로 리디렉션할 딥링크 URL 구성
+        String redirectUrl = "moyora://login"
+                + "?accessToken=" + URLEncoder.encode(accessToken, StandardCharsets.UTF_8);
+                // + "&refreshToken=" + URLEncoder.encode(refreshToken, StandardCharsets.UTF_8)
+        // + "&userId=" + user.getId();
+
+// 로그 확인
+        log.info("Redirecting to mobile app with URL: {}", redirectUrl);
+
+        log.info("Redirecting to mobile app with URL: {}", redirectUrl);
+// 앱으로 리디렉션
+        response.sendRedirect(redirectUrl);
+
+
+
     }
 }

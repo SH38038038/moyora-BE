@@ -7,6 +7,7 @@ import com.project.moyora.app.repository.BoardRepository;
 import com.project.moyora.app.repository.LikeRepository;
 import com.project.moyora.app.repository.ReportRepository;
 import com.project.moyora.global.exception.ResourceNotFoundException;
+import com.project.moyora.global.security.CustomUserDetails;
 import com.project.moyora.global.tag.InterestTag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -83,11 +84,13 @@ public class BoardService {
         GenderType userGender = currentUser.getGender();
 
         return boardRepository.findAllByOrderByCreatedTimeDesc().stream()
+                .filter(board -> !board.isConfirmed()) // ✅ confirmed == true 인 것 제외
                 .filter(board -> userAge >= board.getMinAge() && userAge <= board.getMaxAge())
                 .filter(board -> board.getGenderType() == GenderType.OTHER || board.getGenderType() == userGender)
-                .map(board -> toListDto(board, currentUser)) // 수정된 부분
+                .map(board -> toListDto(board, currentUser))
                 .toList();
     }
+
 
 
     @Transactional(readOnly = true)
@@ -154,18 +157,20 @@ public class BoardService {
         boardRepository.save(board);
     }
 
+    @Transactional
     public void lockParticipantsAfterNoticeCreation(Long boardId) {
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new ResourceNotFoundException("게시판을 찾을 수 없습니다."));
 
-        // 공지사항 생성 후, 모든 참여자 상태를 LOCKED 또는 참여 취소 불가 상태로 변경
         List<BoardApplication> applications = boardApplicationRepository.findByBoard(board);
         for (BoardApplication application : applications) {
-            application.setStatus(ApplicationStatus.LOCKED);  // 취소 불가 상태
+            if (application.getStatus() == ApplicationStatus.ACCEPTED) {
+                application.setStatus(ApplicationStatus.LOCKED);
+            }
         }
-
-        boardApplicationRepository.saveAll(applications);  // 변경된 상태 저장
+        // saveAll 호출은 필요에 따라 추가
     }
+
 
     // BoardService 수정 예시
     public BoardDto updateBoard(Long id, BoardDto dto, User currentUser) {
@@ -269,7 +274,7 @@ public class BoardService {
                     tagDtos,
                     board.getHowMany(),
                     board.getParticipation(),
-                    "/boards/" + board.getId(),
+                    board.getId(),
                     liked,
                     board.isConfirmed()
             );
@@ -295,7 +300,7 @@ public class BoardService {
                 tagDtos,           // <-- List<TagDto>만 넘김
                 board.getHowMany(),
                 board.getParticipation(),
-                "/boards/" + board.getId(),
+                board.getId(),
                 liked,
                 board.isConfirmed()
         );
@@ -377,17 +382,30 @@ public class BoardService {
         }
     }
 
-    public List<Board> searchBoards(BoardSearchRequest request) {
+    public List<BoardListDto> searchBoards(BoardSearchRequest request, User currentUser) {
         String keyword = request.getTitle();
         if (keyword == null || keyword.isBlank()) {
-            keyword = null; // "%" 아님 — JPQL에서는 null 체크로 필터링 제어
+            keyword = null;
         }
-        return boardRepository.searchBoardsWithUserTags(
+
+        List<Board> boards = boardRepository.searchBoardsWithUserTags(
                 keyword,
                 request.getInterestTag(),
                 request.getMeetType(),
                 request.getMeetDetail()
         );
+
+        int userAge = currentUser.getAge();
+        GenderType userGender = currentUser.getGender();
+
+        List<Board> filtered = boards.stream()
+                .filter(board -> !board.isConfirmed()) // ✅ confirmed == true 인 것 제외
+                .filter(board -> userAge >= board.getMinAge() && userAge <= board.getMaxAge())
+                .filter(board -> board.getGenderType() == GenderType.OTHER || board.getGenderType() == userGender)
+                .toList();
+
+        return toListDto(filtered, currentUser); // 👍 좋아요 정보 포함된 BoardListDto로 반환
     }
+
 
 }

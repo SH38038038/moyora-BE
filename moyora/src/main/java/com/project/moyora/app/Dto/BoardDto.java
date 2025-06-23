@@ -30,12 +30,13 @@ public class BoardDto {
     private LocalDateTime createdTime;
     private LocalDateTime updateTime;
     private ApplicationStatus userStatus;
+    private Long applicationId;
 
     public BoardDto(Long id) {
         this.id = id;
     }
 
-    public BoardDto(Board board, BoardApplication boardApplication) {
+    public BoardDto(Board board, BoardApplication application) {
         this.id = board.getId();
         this.writer = new UserSummaryDto(board.getWriter()); // Board에 연결된 User 객체 사용
         this.title = board.getTitle();
@@ -52,7 +53,13 @@ public class BoardDto {
         this.meetDetail = board.getMeetDetail();
         this.createdTime = board.getCreatedTime();
         this.updateTime = board.getUpdateTime();
-        this.userStatus = boardApplication != null ? boardApplication.getStatus() : null;
+        if (application != null) {
+            this.userStatus = application.getStatus();
+            this.applicationId = application.getId();
+        } else {
+            this.userStatus = null;
+            this.applicationId = null;
+        }
     }
 }
 

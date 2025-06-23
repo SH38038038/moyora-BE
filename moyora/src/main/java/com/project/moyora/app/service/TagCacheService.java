@@ -7,14 +7,11 @@ import com.project.moyora.app.Dto.TagDto;
 import com.project.moyora.app.repository.BoardRepository;
 import com.project.moyora.global.tag.InterestTag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 

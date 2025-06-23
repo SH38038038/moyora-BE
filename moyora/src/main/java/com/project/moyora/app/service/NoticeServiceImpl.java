@@ -27,6 +27,7 @@ public class NoticeServiceImpl implements NoticeService {
     private final NoticeCommentRepository commentRepository;
     private final BoardRepository boardRepository;
 
+    @Transactional
     @Override
     public NoticeDto createNotice(Long boardId, NoticeRequest request, User user) {
         Board board = boardRepository.findById(boardId)
@@ -80,6 +81,7 @@ public class NoticeServiceImpl implements NoticeService {
         throw new UnsupportedOperationException("공지사항은 삭제할 수 없습니다.");
     }
 
+    @Transactional
     @Override
     public void addComment(Long noticeId, String content, User user) {
         Notice notice = noticeRepository.findById(noticeId)

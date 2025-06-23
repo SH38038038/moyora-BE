@@ -105,13 +105,15 @@ public class BoardController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<BoardResponseDto>> searchBoards(BoardSearchRequest request) {
-        List<Board> results = boardService.searchBoards(request);
-        List<BoardResponseDto> response = results.stream()
-                .map(BoardResponseDto::from)
-                .toList();
+    public ResponseEntity<List<BoardListDto>> searchBoards(
+            BoardSearchRequest request,
+            @AuthenticationPrincipal CustomUserDetails userDetails
+    ) {
+        User currentUser = userDetails.getUser();
+        List<BoardListDto> response = boardService.searchBoards(request, currentUser);
         return ResponseEntity.ok(response);
     }
+
 
 
 }

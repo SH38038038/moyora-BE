@@ -1,5 +1,8 @@
+server:
+  port: ${PORT:8080}
+
 spring:
-  port: 8080
+  port: ${PORT:8080}
   profiles:
     include: jwt
   datasource:
@@ -11,7 +14,7 @@ spring:
     show-sql: false
     database: mysql
     hibernate:
-      ddl-auto: update
+      ddl-auto: create
     properties:
       hibernate:
         format_sql: true
@@ -31,7 +34,7 @@ spring:
               - birthyear
               - name
             authorization-grant-type: authorization_code
-            redirect-uri: http://localhost:8080/login/oauth2/code/kakao
+            redirect-uri: http://localhost:8080/login/oauth2/code/kakao #http://localhost
             client-name: Kakao
             client-authentication-method: client_secret_post
         provider:
@@ -41,9 +44,8 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
   redis:
-    host: localhost
-    port: 6379
-    timeout: 6000
+    url:  redis://localhost:6379
+    #rediss://:19203754f2444a2894f86a64b085a6d4@gusc1-healthy-hawk-31766.upstash.io:31766
 
 imgbb:
   api:

@@ -154,8 +154,9 @@ public class ApplicationService {
             throw new AccessDeniedException("신청 현황은 게시글 작성자만 조회할 수 있습니다.");
         }
 
-        // ✅ Lazy 로딩 방지를 위한 fetch join 메서드 사용
-        List<BoardApplication> applications = applicationRepository.findWithApplicantAndTagsByBoard(board);
+        // ✅ 작성자 제외한 신청자만 조회
+        List<BoardApplication> applications =
+                applicationRepository.findWithApplicantAndTagsByBoardExcludingWriter(board, board.getWriter().getId());
 
         return applications.stream()
                 .map(ApplicationResponseDto::from)

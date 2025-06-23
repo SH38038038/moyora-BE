@@ -6,6 +6,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Getter
@@ -32,17 +33,21 @@ public class NoticeDto {
                 .createdTime(notice.getCreatedTime())
                 .comments(
                         notice.getComments().stream()
+                                .filter(Objects::nonNull)
+                                .distinct()
                                 .map(CommentDto::fromEntity)
                                 .collect(Collectors.toList())
                 )
                 .participants(
                         notice.getBoard().getApplications().stream()
+                                .filter(Objects::nonNull)
                                 .filter(app -> app.getStatus() == ApplicationStatus.LOCKED)
                                 .map(Participant::fromEntity)
                                 .collect(Collectors.toList())
                 )
                 .build();
     }
+
     public NoticeDto(Long id, String title, String content, LocalDateTime createdTime ) {
         this.id = id;
         this.title = title;

@@ -6,6 +6,7 @@ import com.project.moyora.app.Dto.TagDto;
 import com.project.moyora.app.domain.Board;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.app.repository.BoardRepository;
+import com.project.moyora.app.repository.LikeRepository;
 import com.project.moyora.app.repository.UserRepository;
 import com.project.moyora.global.tag.InterestTag;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ public class HomeService {
     private final UserRepository userRepository;
     private final BoardRepository boardRepository;
     private final TagCacheService tagCacheService;
-
+    private final LikeRepository likeRepository;
 
     public HomeResponseDto getHomeData(String email) {
         User user = userRepository.findByEmail(email)
@@ -52,8 +53,8 @@ public class HomeService {
             }
         }
 
-        List<BoardListDto> recommendedBoardDtos = recommendedBoardsPage.stream()
-                .map(BoardListDto::from)
+        List<BoardListDto> recommendedBoardDtos = recommendedBoardsPage.getContent().stream()
+                .map(board -> BoardListDto.from(board, user, likeRepository))
                 .collect(Collectors.toList());
 
         // 인기 태그 (Redis)

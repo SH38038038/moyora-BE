@@ -1,5 +1,6 @@
 package com.project.moyora.app.controller;
 
+import com.project.moyora.app.Dto.BoardApplicationDto;
 import com.project.moyora.app.Dto.BoardListDto;
 import com.project.moyora.app.Dto.TagDto;
 import com.project.moyora.app.Dto.UserInterestTagsDto;
@@ -120,19 +121,20 @@ public class MyPageController {
     // 신청한 모임
     @Transactional
     @GetMapping("/boards/applying")
-    public ResponseEntity<ApiResponseTemplete<List<BoardListDto>>> getApplyingBoards(Principal principal) {
+    public ResponseEntity<ApiResponseTemplete<List<BoardApplicationDto>>> getApplyingBoards(Principal principal) {
         User user = getUserByPrincipal(principal);
 
-        // WAITING, ACCEPTED 상태의 지원 리스트 조회
         List<BoardApplication> applyingApplications = boardApplicationRepository.findByApplicantAndStatusIn(
                 user, List.of(ApplicationStatus.WAITING, ApplicationStatus.ACCEPTED));
 
-        List<Board> applyingBoards = applyingApplications.stream()
-                .map(BoardApplication::getBoard)
+        List<BoardApplicationDto> result = applyingApplications.stream()
+                .map(application -> BoardApplicationDto.from(application, user, likeRepository)) // <- likeRepository 주입
                 .collect(Collectors.toList());
 
-        return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, toDtoList(applyingBoards, user));
+        return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, result);
     }
+
+
 
 
     // 찜한 모임
@@ -173,7 +175,7 @@ public class MyPageController {
                     tagDtos,    // 변환된 TagDto 리스트 전달
                     board.getHowMany(),
                     board.getParticipation(),
-                    "/api/boards/" + board.getId(),
+                    board.getId(),
                     liked,
                     board.isConfirmed()
             );
@@ -190,6 +192,7 @@ public class MyPageController {
                 .userId(user.getId())
                 .name(user.getName())
                 .gender(user.getGender())
+                .verified(user.getVerified())
                 .age(user.getAge()) // 기존 User 엔티티의 getAge() 활용
                 .links(List.of(
                         "/api/image/upload/icard",
@@ -212,6 +215,7 @@ public class MyPageController {
         private Long userId;
         private String name;
         private GenderType gender;
+        private boolean verified;
         private int age;
         private List<String> links;
     }
