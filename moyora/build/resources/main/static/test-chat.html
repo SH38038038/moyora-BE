@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>채팅 대시보드</title>
+</head>
+<body>
+<h2>채팅 대시보드</h2>
+
+<div>
+    <textarea id="chatLog" cols="60" rows="15" readonly></textarea><br />
+    <input type="text" id="messageInput" placeholder="메시지를 입력하세요" size="50" />
+    <button onclick="sendMessage()">전송</button>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+<script>
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+        const redirectPath = encodeURIComponent(window.location.pathname);
+        window.location.href = `/admin-login.html?redirect=${redirectPath}`;
+    }
+
+    const socket = new SockJS("http://localhost:8080/ws-chat");
+    const stompClient = Stomp.over(socket);
+
+    stompClient.connect(
+        { Authorization: "Bearer " + token },
+        function (frame) {
+            console.log("Connected: " + frame);
+            appendLog("서버에 연결되었습니다.");
+
+            stompClient.subscribe("/topic/chatroom/1", function (message) {
+                const msg = JSON.parse(message.body);
+                appendLog(msg.sender + ": " + msg.content);
+                // alert("새 메시지: " + msg.content); ← 제거됨
+            });
+        },
+        function (error) {
+            console.error("WebSocket 연결 오류:", error);
+            alert("WebSocket 연결에 실패했습니다.");
+        }
+    );
+
+    function sendMessage() {
+        const input = document.getElementById("messageInput");
+        const content = input.value.trim();
+        if (!content) return;
+
+        stompClient.send(
+            "/app/chat.send",
+            {},
+            JSON.stringify({
+                roomId: 1,
+                content: content,
+            })
+        );
+
+        input.value = "";
+    }
+
+    function appendLog(text) {
+        const chatLog = document.getElementById("chatLog");
+        chatLog.value += text + "\n";
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+</script>
+</body>
+</html>

@@ -17,16 +17,21 @@ public interface BoardApplicationRepository extends JpaRepository<BoardApplicati
 
     @Query("SELECT ba.board FROM BoardApplication ba WHERE ba.applicant = :user AND ba.status = 'LOCKED'")
     List<Board> findAcceptedBoardsByUser(@Param("user") User user);
+
     boolean existsByBoardAndApplicantAndStatus(Board board, User applicant, ApplicationStatus status);
+
     Optional<BoardApplication> findByBoard_IdAndApplicant_Name(Long boardId, String name);
+
     List<BoardApplication> findByBoard(Board board);
+
     @Query("""
-SELECT ba FROM BoardApplication ba
-JOIN FETCH ba.applicant a
-LEFT JOIN FETCH a.interestTags
-WHERE ba.board = :board AND a.id <> :writerId
-""")
+            SELECT ba FROM BoardApplication ba
+            JOIN FETCH ba.applicant a
+            LEFT JOIN FETCH a.interestTags
+            WHERE ba.board = :board AND a.id <> :writerId
+            """)
     List<BoardApplication> findWithApplicantAndTagsByBoardExcludingWriter(@Param("board") Board board, @Param("writerId") Long writerId);
+
     // 신청 상태인 게시글 조회 (WAITING, ACCEPTED)
     List<BoardApplication> findByApplicantAndStatusIn(User applicant, List<ApplicationStatus> statuses);
 
@@ -35,4 +40,7 @@ WHERE ba.board = :board AND a.id <> :writerId
 
     Optional<BoardApplication> findByBoardIdAndApplicantId(Long boardId, Long applicantId);
 
+
+    @Query("SELECT a.applicant FROM BoardApplication a WHERE a.board.id = :boardId AND a.status = :status")
+    List<User> findUsersByBoardAndStatus(@Param("boardId") Long boardId, @Param("status") ApplicationStatus status);
 }

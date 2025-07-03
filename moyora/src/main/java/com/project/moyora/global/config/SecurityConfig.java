@@ -37,6 +37,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.web.socket.config.annotation.StompEndpointRegistry;
 
 import java.io.IOException;
 import java.util.List;
@@ -75,7 +76,7 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/sign-up", "/api/check/email", "/api/check/nickname", "/api/login", "/api/verify/email",
-                                "/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**", "/api/login","/login.html","/admin/login","/admin-dashboard.html").permitAll()
+                                "/swagger-ui.html", "/v3/api-docs/**", "/swagger-ui/**", "/api/login","/login.html","/admin/login","admin-login.html","/admin-dashboard.html","/ws-chat/**","/topic/**","/test-chat.html","/favicon.ico").permitAll()
                         .anyRequest().authenticated()
                 )
                 .exceptionHandling(ex -> ex
@@ -167,4 +168,5 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", configuration);
         return source;
     }
+
 }

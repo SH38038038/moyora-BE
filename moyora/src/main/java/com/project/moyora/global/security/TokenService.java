@@ -183,4 +183,19 @@ public class TokenService {
         response.setHeader(refreshHeader, refreshToken);
         log.info("AccessToken, RefreshToken 헤더 설정 완료");
     }
+
+    @Transactional(readOnly = true)
+    public User getUserFromToken(String token) {
+        // "Bearer " 접두어 제거
+        if (token.startsWith("Bearer ")) {
+            token = token.substring(7);
+        }
+
+        String email = extractEmail(token)
+                .orElseThrow(() -> new CustomException(ErrorCode.INVALID_TOKEN_EXCEPTION, "토큰에서 이메일 추출 실패"));
+
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER_EXCEPTION, "사용자 정보 없음"));
+    }
+
 }
