@@ -1,7 +1,7 @@
 package com.project.moyora.app.service;
 
-import com.project.moyora.app.Dto.NoticeDto;
-import com.project.moyora.app.Dto.NoticeRequest;
+import com.project.moyora.app.dto.NoticeDto;
+import com.project.moyora.app.dto.NoticeRequest;
 import com.project.moyora.app.domain.Board;
 import com.project.moyora.app.domain.Notice;
 import com.project.moyora.app.domain.NoticeComment;
@@ -15,9 +15,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

@@ -1,6 +1,6 @@
 package com.project.moyora.app.controller;
 
-import com.project.moyora.app.Dto.InterestTagGroupDto;
+import com.project.moyora.app.dto.InterestTagGroupDto;
 import com.project.moyora.app.service.InterestTagService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,13 +1,12 @@
 package com.project.moyora.app.service;
 
-import com.project.moyora.app.Dto.*;
+import com.project.moyora.app.dto.*;
 import com.project.moyora.app.domain.*;
 import com.project.moyora.app.repository.BoardApplicationRepository;
 import com.project.moyora.app.repository.BoardRepository;
 import com.project.moyora.app.repository.LikeRepository;
 import com.project.moyora.app.repository.ReportRepository;
 import com.project.moyora.global.exception.ResourceNotFoundException;
-import com.project.moyora.global.security.CustomUserDetails;
 import com.project.moyora.global.tag.InterestTag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;

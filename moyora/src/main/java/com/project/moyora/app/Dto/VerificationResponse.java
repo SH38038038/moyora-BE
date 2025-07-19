@@ -1,4 +1,4 @@
-package com.project.moyora.app.Dto;
+package com.project.moyora.app.dto;
 
 import com.project.moyora.app.domain.GenderType;
 import com.project.moyora.app.domain.VerificationStatus;
@@ -7,7 +7,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 @Getter
 @Setter

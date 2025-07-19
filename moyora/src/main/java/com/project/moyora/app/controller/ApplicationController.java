@@ -1,6 +1,6 @@
 package com.project.moyora.app.controller;
 
-import com.project.moyora.app.Dto.ApplicationDto;
+import com.project.moyora.app.dto.ApplicationDto;
 import com.project.moyora.app.domain.ApplicationStatus;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.app.service.ApplicationService;

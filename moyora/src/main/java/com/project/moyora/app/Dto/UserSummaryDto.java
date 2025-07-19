@@ -1,4 +1,4 @@
-package com.project.moyora.app.Dto;
+package com.project.moyora.app.dto;
 
 import com.project.moyora.app.domain.GenderType;
 import com.project.moyora.app.domain.User;

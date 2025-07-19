@@ -1,10 +1,12 @@
 package com.project.moyora.app.controller;
 
-import com.project.moyora.app.Dto.*;
 import com.project.moyora.app.domain.Board;
+import com.project.moyora.app.domain.ChatRoom;
+import com.project.moyora.app.dto.*;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.app.service.ApplicationService;
 import com.project.moyora.app.service.BoardService;
+import com.project.moyora.app.service.ChatRoomService;
 import com.project.moyora.global.exception.SuccessCode;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;
 import com.project.moyora.global.security.CustomUserDetails;
@@ -24,6 +26,7 @@ public class BoardController {
 
     private final BoardService boardService;
     private final ApplicationService applicationService;
+    private final ChatRoomService chatRoomService;
 
     // ✅ 모집글 생성
     @PostMapping
@@ -81,14 +84,22 @@ public class BoardController {
         return ApiResponseTemplete.success(SuccessCode.DELETE_POST_SUCCESS, "모임이 삭제되었습니다.");
     }
 
+    // ✅ 모집글 확정
     @PutMapping("/{boardId}/confirm")
     public ResponseEntity<ApiResponseTemplete<String>> confirmBoard(
             @PathVariable Long boardId,
             @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-        boardService.confirmBoard(boardId, userDetails.getUser());  // 확정 처리
+        User user = userDetails.getUser();
+
+        boardService.confirmBoard(boardId, user);
         boardService.lockParticipantsAfterNoticeCreation(boardId);
-        return ApiResponseTemplete.success(SuccessCode.UPDATE_POST_SUCCESS, "모임이 확정되었습니다.");
+
+        BoardDto boardDto = boardService.getBoardById(boardId, user); // 수정된 호출
+        ChatRoom chatRoom = chatRoomService.createRoomForLockedBoard(boardDto.toEntity()); // BoardDto에서 Board로 변환
+
+        String roomUrl = "/chatroom/" + chatRoom.getId(); // 채팅방 주소
+        return ApiResponseTemplete.success(SuccessCode.UPDATE_POST_SUCCESS, roomUrl);
     }
 
     // ✅ 모집 신청 현황

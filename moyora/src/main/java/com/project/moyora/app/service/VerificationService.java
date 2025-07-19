@@ -1,6 +1,6 @@
 package com.project.moyora.app.service;
 
-import com.project.moyora.app.Dto.VerificationResponse;
+import com.project.moyora.app.dto.VerificationResponse;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.app.domain.Verification;
 import com.project.moyora.app.domain.VerificationStatus;

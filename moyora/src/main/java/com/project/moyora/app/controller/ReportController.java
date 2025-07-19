@@ -1,8 +1,8 @@
 package com.project.moyora.app.controller;
 
-import com.project.moyora.app.Dto.ReportRequest;
-import com.project.moyora.app.Dto.ReportResponse;
-import com.project.moyora.app.Dto.ReportStatusUpdateRequest;
+import com.project.moyora.app.dto.ReportRequest;
+import com.project.moyora.app.dto.ReportResponse;
+import com.project.moyora.app.dto.ReportStatusUpdateRequest;
 import com.project.moyora.app.service.ReportService;
 import com.project.moyora.global.exception.SuccessCode;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;

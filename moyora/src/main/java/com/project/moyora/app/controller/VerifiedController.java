@@ -1,8 +1,8 @@
 package com.project.moyora.app.controller;
 
 
-import com.project.moyora.app.Dto.RejectVerificationRequest;
-import com.project.moyora.app.Dto.VerificationResponse;
+import com.project.moyora.app.dto.RejectVerificationRequest;
+import com.project.moyora.app.dto.VerificationResponse;
 import com.project.moyora.app.service.VerificationService;
 import com.project.moyora.global.exception.SuccessCode;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;

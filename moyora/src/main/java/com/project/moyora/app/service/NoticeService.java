@@ -1,10 +1,8 @@
 package com.project.moyora.app.service;
 
-import com.project.moyora.app.Dto.NoticeDto;
-import com.project.moyora.app.Dto.NoticeRequest;
+import com.project.moyora.app.dto.NoticeDto;
+import com.project.moyora.app.dto.NoticeRequest;
 import com.project.moyora.app.domain.User;
-
-import java.util.List;
 
 public interface NoticeService {
     NoticeDto createNotice(Long boardId, NoticeRequest request, User user);

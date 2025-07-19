@@ -1,7 +1,7 @@
 package com.project.moyora.app.service;
 
-import com.project.moyora.app.Dto.ReportResponse;
-import com.project.moyora.app.Dto.ReportStatusUpdateRequest;
+import com.project.moyora.app.dto.ReportResponse;
+import com.project.moyora.app.dto.ReportStatusUpdateRequest;
 import com.project.moyora.app.domain.*;
 import com.project.moyora.app.repository.BoardRepository;
 import com.project.moyora.app.repository.ReportRepository;

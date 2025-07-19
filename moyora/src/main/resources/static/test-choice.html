@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>테스트 기능 선택</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        h2 {
+            margin-bottom: 30px;
+        }
+        button {
+            padding: 15px 30px;
+            margin: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+<h2>관리자 기능을 선택하세요</h2>
+<button onclick="navigateTo('sse-test.html')">📢 SSE 알림 테스트</button>
+<button onclick="navigateTo('chatroom-list.html')">💬 채팅 목록</button>
+
+<script>
+    // URL에서 token 쿼리파라미터가 있을 경우 localStorage에 저장
+    const params = new URLSearchParams(window.location.search);
+    const tokenFromUrl = params.get("token");
+
+    if (tokenFromUrl) {
+        localStorage.setItem("accessToken", tokenFromUrl);
+    }
+
+    // 토큰이 없으면 로그인 페이지로 리다이렉트
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+        alert("인증이 필요합니다. 로그인 페이지로 이동합니다.");
+        window.location.href = "/login.html";
+    }
+
+    function navigateTo(page) {
+        window.location.href = page;
+    }
+</script>
+</body>
+</html>

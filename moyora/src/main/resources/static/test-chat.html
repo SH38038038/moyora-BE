@@ -18,8 +18,31 @@
 <script>
     const token = localStorage.getItem("accessToken");
     if (!token) {
-        const redirectPath = encodeURIComponent(window.location.pathname);
-        window.location.href = `/admin-login.html?redirect=${redirectPath}`;
+        alert("로그인이 필요합니다.");
+        window.location.href = "/login.html";
+    }
+
+    // 쿼리 파라미터에서 roomId 추출
+    const params = new URLSearchParams(window.location.search);
+    const roomId = params.get('roomId');
+    if (!roomId) {
+        alert("채팅방 ID가 필요합니다.");
+        throw new Error("채팅방 ID가 없습니다.");
+    }
+
+    // 기존 메시지 불러오기
+    function loadChatHistory() {
+        fetch(`/chatroom/${roomId}/messages`, {
+            headers: { 'Authorization': 'Bearer ' + token }
+        })
+        .then(res => {
+            if (!res.ok) throw new Error("메시지 불러오기 실패");
+            return res.json();
+        })
+        .then(messages => {
+            messages.forEach(msg => appendLog(`${msg.sender}: ${msg.content}`));
+        })
+        .catch(err => console.error("기존 메시지 로딩 오류:", err));
     }
 
     const socket = new SockJS("http://localhost:8080/ws-chat");
@@ -27,17 +50,18 @@
 
     stompClient.connect(
         { Authorization: "Bearer " + token },
-        function (frame) {
+        frame => {
             console.log("Connected: " + frame);
             appendLog("서버에 연결되었습니다.");
 
-            stompClient.subscribe("/topic/chatroom/1", function (message) {
+            loadChatHistory();
+
+            stompClient.subscribe(`/topic/chatroom/${roomId}`, message => {
                 const msg = JSON.parse(message.body);
-                appendLog(msg.sender + ": " + msg.content);
-                // alert("새 메시지: " + msg.content); ← 제거됨
+                appendLog(`${msg.sender}: ${msg.content}`);
             });
         },
-        function (error) {
+        error => {
             console.error("WebSocket 연결 오류:", error);
             alert("WebSocket 연결에 실패했습니다.");
         }
@@ -51,10 +75,7 @@
         stompClient.send(
             "/app/chat.send",
             {},
-            JSON.stringify({
-                roomId: 1,
-                content: content,
-            })
+            JSON.stringify({ roomId: roomId, content: content })
         );
 
         input.value = "";

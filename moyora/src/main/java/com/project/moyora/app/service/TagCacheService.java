@@ -1,9 +1,8 @@
 package com.project.moyora.app.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.project.moyora.app.Dto.TagDto;
+import com.project.moyora.app.dto.TagDto;
 import com.project.moyora.app.repository.BoardRepository;
 import com.project.moyora.global.tag.InterestTag;
 import lombok.RequiredArgsConstructor;

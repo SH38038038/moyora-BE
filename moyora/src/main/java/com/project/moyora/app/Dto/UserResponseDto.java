@@ -1,4 +1,4 @@
-package com.project.moyora.app.Dto;
+package com.project.moyora.app.dto;
 
 import com.project.moyora.app.domain.User;
 import com.project.moyora.global.tag.InterestTag;
@@ -8,7 +8,6 @@ import lombok.Getter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static org.yaml.snakeyaml.tokens.Token.ID.Tag;
 public class UserResponseDto {
 
     private String email;

@@ -52,9 +52,6 @@ public class TokenService {
                         @Value("${jwt.access.expiration}") long accessTokenValidityTime,
                         @Value("${jwt.refresh.expiration}") long refreshTokenValidityTime,
                         @Value("${jwt.secret}") String secretKey) {
-        //log.info("✅ jwt.access.expiration: {}", accessTokenValidityTime);
-        //log.info("✅ jwt.refresh.expiration: {}", refreshTokenValidityTime);
-        //log.info("✅ jwt.secret: {}", secretKey);
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         this.key = Keys.hmacShaKeyFor(keyBytes);
         this.accessTokenValidityTime = accessTokenValidityTime;
@@ -131,6 +128,21 @@ public class TokenService {
         }
     }
 
+    public Optional<Long> extractUserId(String token) {
+        try {
+            Claims claims = Jwts.parser()
+                    .verifyWith((SecretKey) key)
+                    .build()
+                    .parseSignedClaims(token)
+                    .getPayload();
+
+            return Optional.ofNullable(claims.get("userId", Integer.class)).map(Long::valueOf);
+        } catch (Exception e) {
+            log.error("토큰에서 userId 추출 실패", e);
+            return Optional.empty();
+        }
+    }
+
     /**
      * Refresh Token DB 저장
      */
@@ -196,6 +208,15 @@ public class TokenService {
 
         return userRepository.findByEmail(email)
                 .orElseThrow(() -> new CustomException(ErrorCode.NOT_FOUND_USER_EXCEPTION, "사용자 정보 없음"));
+    }
+
+    /**
+     * logout 을 위한 R토큰 제거
+     */
+    @Transactional
+    public void removeRefreshToken(String email) {
+        userRepository.findByEmail(email)
+                .ifPresent(user -> user.updateRefreshToken(null));
     }
 
 }

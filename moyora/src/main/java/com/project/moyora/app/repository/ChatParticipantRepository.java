@@ -6,9 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
 @Repository
 public interface ChatParticipantRepository extends JpaRepository<ChatParticipant, Long> {
 
     boolean existsByChatRoomIdAndUserId(Long chatRoomId, Long userId);
+    List<ChatParticipant> findAllByUserId(Long userId);
 
 }

@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -19,7 +20,8 @@ public class ChatRoomService {
 
     @Transactional
     public ChatRoom createRoomForLockedBoard(Board board) {
-        if (chatRoomRepository.existsByBoard(board)) return null; // 중복 방지
+        Optional<ChatRoom> existing = chatRoomRepository.findByBoard(board);
+        if (existing.isPresent()) return existing.get(); // 이미 있으면 그거 사용
 
         ChatRoom room = new ChatRoom();
         room.setBoard(board);
@@ -37,4 +39,5 @@ public class ChatRoomService {
 
         return chatRoomRepository.save(room);
     }
+
 }

@@ -1,8 +1,8 @@
 package com.project.moyora.app.service;
 
-import com.project.moyora.app.Dto.BoardListDto;
-import com.project.moyora.app.Dto.HomeResponseDto;
-import com.project.moyora.app.Dto.TagDto;
+import com.project.moyora.app.dto.BoardListDto;
+import com.project.moyora.app.dto.HomeResponseDto;
+import com.project.moyora.app.dto.TagDto;
 import com.project.moyora.app.domain.Board;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.app.repository.BoardRepository;

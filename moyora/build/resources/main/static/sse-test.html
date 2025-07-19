@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>SSE 알림 테스트</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        #sse-url {
+            margin-bottom: 20px;
+            font-weight: bold;
+            color: #555;
+        }
+        #messages p {
+            padding: 5px;
+            margin: 0;
+            border-bottom: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+<h2>📢 알림 메시지</h2>
+<div id="sse-url"></div>
+<div id="messages"></div>
+<script>
+    const token = localStorage.getItem('accessToken');
+
+    if (!token) {
+        alert('토큰이 없습니다. 로그인 후 접속하세요.');
+        throw new Error('No token');
+    }
+
+    let payload;
+    try {
+        payload = JSON.parse(atob(token.split('.')[1]));
+    } catch (e) {
+        alert('토큰 파싱 오류');
+        throw e;
+    }
+
+    const userId = payload.userId || payload.id;
+    if (!userId) {
+        alert('토큰에 userId 정보가 없습니다.');
+        throw new Error('userId 없음');
+    }
+
+    const messages = document.getElementById('messages');
+    const sseUrlDiv = document.getElementById('sse-url');
+
+    const sseUrl = `http://localhost:8080/api/notification/subscribe?token=${token}`;
+    sseUrlDiv.textContent = `SSE 연결 URL: ${sseUrl}`;
+
+    function loadUnreadNotifications() {
+        fetch(`http://localhost:8080/api/notification/unread`, {
+            headers: {
+                'Authorization': `Bearer ${token}`
+            }
+        })
+        .then(res => {
+            if (!res.ok) {
+                throw new Error(`HTTP error! status: ${res.status}`);
+            }
+            return res.json();
+        })
+        .then(data => {
+            messages.innerHTML = '';
+            if (!data || data.length === 0) {
+                messages.innerHTML = '<p><i>읽지 않은 알림이 없습니다.</i></p>';
+            } else {
+                data.forEach(notification => {
+                    const p = document.createElement('p');
+                    p.textContent = `[${notification.type}] ${notification.content}`;
+                    messages.appendChild(p);
+                });
+            }
+        })
+        .catch(err => {
+            console.error('안읽은 알림 조회 실패:', err);
+            messages.innerHTML = '<p><i>알림 조회 중 오류가 발생했습니다.</i></p>';
+        });
+    }
+
+    function connectSse() {
+        const eventSource = new EventSource(sseUrl);
+
+        eventSource.onopen = () => console.log('SSE 연결 성공');
+
+        eventSource.addEventListener("sse", function(event) {
+            try {
+                const data = JSON.parse(event.data);
+                const p = document.createElement('p');
+                p.textContent = `[${data.type}] ${data.content}`;
+                messages.appendChild(p);
+            } catch (e) {
+                console.error('SSE 메시지 파싱 오류:', event.data);
+            }
+        });
+
+        eventSource.onerror = function(err) {
+            console.error('SSE 연결 오류:', err);
+            eventSource.close();
+            setTimeout(() => {
+                console.log('SSE 재연결 시도...');
+                connectSse();
+            }, 5000);
+        };
+    }
+
+    loadUnreadNotifications();
+    connectSse();
+</script>
+
+</body>
+</html>

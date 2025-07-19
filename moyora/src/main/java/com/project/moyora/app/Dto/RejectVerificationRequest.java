@@ -1,4 +1,4 @@
-package com.project.moyora.app.Dto;
+package com.project.moyora.app.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

@@ -1,6 +1,6 @@
 package com.project.moyora.app.controller;
 
-import com.project.moyora.app.Dto.KakaoLoginRequest;
+import com.project.moyora.app.dto.KakaoLoginRequest;
 import com.project.moyora.app.service.KakaoOAuthService;
 import com.project.moyora.global.exception.SuccessCode;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;

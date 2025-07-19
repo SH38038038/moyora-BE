@@ -1,9 +1,9 @@
 package com.project.moyora.app.controller;
 
-import com.project.moyora.app.Dto.BoardDto;
-import com.project.moyora.app.Dto.CommentRequest;
-import com.project.moyora.app.Dto.NoticeDto;
-import com.project.moyora.app.Dto.NoticeRequest;
+import com.project.moyora.app.dto.BoardDto;
+import com.project.moyora.app.dto.CommentRequest;
+import com.project.moyora.app.dto.NoticeDto;
+import com.project.moyora.app.dto.NoticeRequest;
 import com.project.moyora.app.domain.Board;
 import com.project.moyora.app.service.BoardService;
 import com.project.moyora.app.service.NoticeService;
@@ -15,7 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

@@ -1,9 +1,9 @@
 package com.project.moyora.app.controller;
 
-import com.project.moyora.app.Dto.BoardApplicationDto;
-import com.project.moyora.app.Dto.BoardListDto;
-import com.project.moyora.app.Dto.TagDto;
-import com.project.moyora.app.Dto.UserInterestTagsDto;
+import com.project.moyora.app.dto.BoardApplicationDto;
+import com.project.moyora.app.dto.BoardListDto;
+import com.project.moyora.app.dto.TagDto;
+import com.project.moyora.app.dto.UserInterestTagsDto;
 import com.project.moyora.app.domain.*;
 import com.project.moyora.app.repository.BoardApplicationRepository;
 import com.project.moyora.app.repository.BoardRepository;

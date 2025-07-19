@@ -1,7 +1,6 @@
 package com.project.moyora.app.service;
 
-import com.project.moyora.app.Dto.InterestTagDto;
-import com.project.moyora.app.Dto.InterestTagGroupDto;
+import com.project.moyora.app.dto.InterestTagGroupDto;
 import com.project.moyora.app.domain.Tag;
 import com.project.moyora.global.tag.InterestTag;
 import org.springframework.stereotype.Service;
@@ -10,7 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
-import java.util.LinkedHashMap;
 
 @Service
 public class InterestTagService {

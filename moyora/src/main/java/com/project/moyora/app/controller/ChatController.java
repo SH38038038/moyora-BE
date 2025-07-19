@@ -1,23 +1,33 @@
 package com.project.moyora.app.controller;
 
-import com.project.moyora.app.Dto.ChatMessageDto;
+import com.project.moyora.app.domain.ChatParticipant;
+import com.project.moyora.app.dto.ChatMessageDto;
 import com.project.moyora.app.domain.ChatMessage;
 import com.project.moyora.app.domain.ChatRoom;
 import com.project.moyora.app.domain.User;
+import com.project.moyora.app.dto.ChatRoomDto;
 import com.project.moyora.app.repository.ChatMessageRepository;
 import com.project.moyora.app.repository.ChatParticipantRepository;
 import com.project.moyora.app.repository.ChatRoomRepository;
 import com.project.moyora.app.repository.UserRepository;
 import com.project.moyora.global.exception.ErrorCode;
 import com.project.moyora.global.exception.model.CustomException;
+import com.project.moyora.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -67,4 +77,46 @@ public class ChatController {
 
         messagingTemplate.convertAndSend("/topic/chatroom/" + room.getId(), sendDto);
     }
+
+    @GetMapping("/chatroom/{roomId}")
+    public String chatRoomPage(@PathVariable Long roomId, Model model) {
+        model.addAttribute("roomId", roomId);
+        return "chatroom"; // chatroom.html 뷰
+    }
+
+    @GetMapping("/chatroom/{roomId}/messages")
+    public ResponseEntity<List<ChatMessageDto>> getChatMessages(@PathVariable Long roomId) {
+        List<ChatMessage> messages = chatMessageRepository.findByChatRoomIdOrderBySentAtAsc(roomId);
+        List<ChatMessageDto> dtos = messages.stream()
+                .map(msg -> {
+                    ChatMessageDto dto = new ChatMessageDto();
+                    dto.setRoomId(msg.getChatRoom().getId());
+                    dto.setSender(msg.getSender());
+                    dto.setContent(msg.getContent());
+                    //dto.setSentAt(msg.getSentAt());
+                    return dto;
+                })
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+
+    @GetMapping("/chatrooms/my")
+    public ResponseEntity<List<ChatRoomDto>> getMyChatRooms(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
+
+        User user = customUserDetails.getUser();
+
+        if (user == null) {
+            throw new CustomException(ErrorCode.UNAUTHORIZED_EXCEPTION, "인증되지 않은 사용자입니다.");
+        }
+
+        List<ChatParticipant> participants = chatParticipantRepository.findAllByUserId(user.getId());
+
+        List<ChatRoomDto> chatRooms = participants.stream()
+                .map(ChatParticipant::getChatRoom)
+                .map(room -> new ChatRoomDto(room.getId(), room.getName()))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(chatRooms);
+    }
+
 }

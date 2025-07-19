@@ -1,15 +1,11 @@
 package com.project.moyora.app.service;
 
-import com.project.moyora.app.Dto.ApplicationDto;
-import com.project.moyora.app.Dto.ApplicationRequestDto;
-import com.project.moyora.app.Dto.ApplicationResponseDto;
+import com.project.moyora.app.dto.ApplicationDto;
+import com.project.moyora.app.dto.ApplicationResponseDto;
 import com.project.moyora.app.domain.*;
-import com.project.moyora.app.repository.ApplicationRepository;
 import com.project.moyora.app.repository.BoardApplicationRepository;
 import com.project.moyora.app.repository.BoardRepository;
-import com.project.moyora.app.repository.UserRepository;
 import com.project.moyora.global.security.CustomUserDetails;
-import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;

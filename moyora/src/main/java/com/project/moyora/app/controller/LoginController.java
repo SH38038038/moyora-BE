@@ -1,15 +1,13 @@
 package com.project.moyora.app.controller;
 
-import com.project.moyora.app.Dto.LoginRequestDto;
+import com.project.moyora.app.dto.LoginRequestDto;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.app.repository.UserRepository;
 import com.project.moyora.global.exception.ErrorCode;
 import com.project.moyora.global.exception.SuccessCode;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;
-import com.project.moyora.global.security.JwtResponse;
 import com.project.moyora.global.security.TokenService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;

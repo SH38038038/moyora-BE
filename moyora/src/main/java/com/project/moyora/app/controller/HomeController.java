@@ -1,6 +1,6 @@
 package com.project.moyora.app.controller;
 
-import com.project.moyora.app.Dto.HomeResponseDto;
+import com.project.moyora.app.dto.HomeResponseDto;
 import com.project.moyora.app.service.HomeService;
 import com.project.moyora.global.exception.SuccessCode;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;

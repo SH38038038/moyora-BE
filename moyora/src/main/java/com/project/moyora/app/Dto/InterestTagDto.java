@@ -1,3 +1,3 @@
-package com.project.moyora.app.Dto;
+package com.project.moyora.app.dto;
 
 public record InterestTagDto(String name, String displayName) {}

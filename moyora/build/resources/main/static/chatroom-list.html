@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>참여 중인 채팅방 목록</title>
+</head>
+<body>
+<h2>참여 중인 채팅방 목록</h2>
+<ul id="roomList"></ul>
+
+<script>
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      alert("로그인이 필요합니다.");
+      window.location.href = "/login.html";
+    }
+
+    fetch('/chatrooms/my', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    })
+    .then(res => {
+      if (!res.ok) throw new Error("채팅방 목록 불러오기 실패");
+      return res.json();
+    })
+    .then(rooms => {
+      const listEl = document.getElementById('roomList');
+      rooms.forEach(room => {
+        const li = document.createElement('li');
+        const a = document.createElement('a');
+        a.href = `/test-chat.html?roomId=${room.id}`;
+        a.textContent = room.name || `채팅방 #${room.id}`;
+        li.appendChild(a);
+        listEl.appendChild(li);
+      });
+    })
+    .catch(err => {
+      console.error(err);
+      alert("채팅방 목록 불러오기 실패");
+    });
+</script>
+</body>
+</html>

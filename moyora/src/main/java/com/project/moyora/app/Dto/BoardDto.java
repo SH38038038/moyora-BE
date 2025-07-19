@@ -1,4 +1,4 @@
-package com.project.moyora.app.Dto;
+package com.project.moyora.app.dto;
 
 import com.project.moyora.app.domain.*;
 import lombok.*;
@@ -61,5 +61,14 @@ public class BoardDto {
             this.applicationId = null;
         }
     }
+
+    public Board toEntity() {
+        // 간단하게 필요한 필드만 복원
+        Board board = new Board();
+        board.setId(this.id);
+        // 다른 필드도 필요 시 설정
+        return board;
+    }
+
 }
 

@@ -1,6 +1,6 @@
 package com.project.moyora.app.domain;
 
-import com.project.moyora.app.Dto.BoardSearchRequest;
+import com.project.moyora.app.dto.BoardSearchRequest;
 import org.springframework.data.jpa.domain.Specification;
 
 import java.util.ArrayList;

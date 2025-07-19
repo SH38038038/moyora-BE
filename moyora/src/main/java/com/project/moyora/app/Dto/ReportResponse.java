@@ -1,4 +1,4 @@
-package com.project.moyora.app.Dto;
+package com.project.moyora.app.dto;
 
 import com.project.moyora.app.domain.ReportStatus;
 import com.project.moyora.app.domain.ReportType;
