@@ -34,6 +34,7 @@ public class BoardService {
     private final BoardApplicationRepository boardApplicationRepository;
     private final ReportRepository reportRepository;
     private final BoardSpecification boardSpecification;
+    private final BoardSearchService boardSearchService;
 
     public BoardDto createBoard(BoardDto dto, User currentUser) {
         if (!Boolean.TRUE.equals(currentUser.getVerified())) {
@@ -72,6 +73,8 @@ public class BoardService {
                 .status(ApplicationStatus.LOCKED)
                 .build();
         boardApplicationRepository.save(application);
+
+        boardSearchService.indexBoard(board); // elastic search 연동
 
         return new BoardDto(savedBoard, application);  // ✅ userStatus 포함
     }

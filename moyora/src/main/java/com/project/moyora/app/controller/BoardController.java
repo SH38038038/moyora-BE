@@ -1,22 +1,26 @@
 package com.project.moyora.app.controller;
 
-import com.project.moyora.app.domain.Board;
-import com.project.moyora.app.domain.ChatRoom;
+import com.project.moyora.app.domain.*;
 import com.project.moyora.app.dto.*;
-import com.project.moyora.app.domain.User;
 import com.project.moyora.app.service.ApplicationService;
+import com.project.moyora.app.service.BoardSearchService;
 import com.project.moyora.app.service.BoardService;
 import com.project.moyora.app.service.ChatRoomService;
 import com.project.moyora.global.exception.SuccessCode;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;
 import com.project.moyora.global.security.CustomUserDetails;
+import com.project.moyora.global.tag.InterestTag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 @RestController
@@ -27,6 +31,7 @@ public class BoardController {
     private final BoardService boardService;
     private final ApplicationService applicationService;
     private final ChatRoomService chatRoomService;
+    private final BoardSearchService boardSearchService;
 
     // ✅ 모집글 생성
     @PostMapping
@@ -115,17 +120,61 @@ public class BoardController {
         return ResponseEntity.ok(responseDtos);
     }
 
+    // ✅ 모집 글 검색
     @GetMapping("/search")
     public ResponseEntity<List<BoardListDto>> searchBoards(
             BoardSearchRequest request,
-            @AuthenticationPrincipal CustomUserDetails userDetails
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            Pageable pageable
     ) {
         User currentUser = userDetails.getUser();
-        List<BoardListDto> response = boardService.searchBoards(request, currentUser);
-        return ResponseEntity.ok(response);
+
+        SearchHits<BoardDocument> searchHits = boardSearchService.search(
+                request.getTitle(),
+                request.getMeetType(),
+                request.getInterestTag(),
+                pageable
+        );
+
+        List<BoardListDto> results = searchHits.getSearchHits().stream()
+                .map(hit -> {
+                    BoardDocument doc = hit.getContent();
+
+                    int userAge = currentUser.getAge();
+                    GenderType userGender = currentUser.getGender();
+
+                    if (doc.isConfirmed()) return null;
+                    if (doc.getMinAge() != null && userAge < doc.getMinAge()) return null;
+                    if (doc.getMaxAge() != null && userAge > doc.getMaxAge()) return null;
+                    if (doc.getGenderType() != null &&
+                            doc.getGenderType() != GenderType.OTHER &&
+                            doc.getGenderType() != userGender) return null;
+
+                    DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
+
+                    return BoardListDto.builder()
+                            .detailId(doc.getId())
+                            .title(doc.getTitle())
+                            .endDate(doc.getEndDate())
+                            .meetType(doc.getMeetType())
+                            .meetDetail(doc.getMeetDetail())
+                            .tags(convertTags(doc.getTags()))
+                            .howMany(doc.getHowMany())
+                            .participation(doc.getParticipation())
+                            .confirmed(doc.isConfirmed())
+                            .build();
+                })
+                .filter(dto -> dto != null)
+                .toList();
+
+        return ResponseEntity.ok(results);
     }
 
-
-
+    private List<TagDto> convertTags(List<InterestTag> tags) {
+        if (tags == null) return List.of();
+        return tags.stream()
+                .map(TagDto::from)
+                .toList();
+    }
 }
 
