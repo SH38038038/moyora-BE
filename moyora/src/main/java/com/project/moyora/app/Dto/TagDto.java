@@ -9,13 +9,11 @@ import lombok.Setter;
 @Setter
 @Builder
 public class TagDto {
-    private String section;
     private String name;
     private String displayName;
 
     // 생성자
-    public TagDto(String section, String name, String displayName) {
-        this.section = section;
+    public TagDto(String name, String displayName) {
         this.name = name;
         this.displayName = displayName;
     }
@@ -28,7 +26,6 @@ public class TagDto {
             System.out.println("[DEBUG] TagDto.from() 호출 시 tag = " + tag.name());
         }
         return TagDto.builder()
-                .section(tag.getSection())
                 .name(tag.name())
                 .displayName(tag.getDisplayName())
                 .build();

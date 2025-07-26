@@ -18,8 +18,14 @@ public class DataInitializer {
 
     @PostConstruct
     public void indexAllBoardsForTest() {
-        List<Board> boards = boardRepository.findAll();
-        boards.forEach(boardSearchService::indexBoard);
-        System.out.println("✅ 게시판 데이터 Elasticsearch 색인 완료");
+        try {
+            List<Board> boards = boardRepository.findAll();
+            boards.forEach(boardSearchService::indexBoard);
+            System.out.println("✅ 게시판 데이터 Elasticsearch 색인 완료");
+        } catch (Exception e) {
+            System.err.println("❌ 색인 중 오류 발생: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
+
 }

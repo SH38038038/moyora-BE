@@ -1,29 +1,31 @@
 {
-  "properties": {
-    "id": { "type": "long" },
-    "writerId": { "type": "long" },
-    "title": {
-      "type": "text",
-      "analyzer": "korean_analyzer"
-    },
-    "content": {
-      "type": "text",
-      "analyzer": "korean_analyzer"
-    },
-    "genderType": { "type": "keyword" },
-    "minAge": { "type": "integer" },
-    "maxAge": { "type": "integer" },
-    "startDate": { "type": "date" },
-    "endDate": { "type": "date" },
-    "tags": { "type": "keyword" },
-    "howMany": { "type": "integer" },
-    "participation": { "type": "integer" },
-    "confirmed": { "type": "boolean" },
-    "meetType": { "type": "keyword" },
-    "meetDetail": {
-      "type": "text",
-      "analyzer": "korean_analyzer"
-    },
-    "createdTime": { "type": "date" }
+  "mappings": {
+    "properties": {
+      "id": { "type": "long" },
+      "writerId": { "type": "long" },
+      "title": {
+        "type": "text",
+        "analyzer": "korean_ngram_analyzer"
+      },
+      "content": {
+        "type": "text",
+        "analyzer": "korean_ngram_analyzer"
+      },
+      "meetDetail": {
+        "type": "text",
+        "analyzer": "korean_ngram_analyzer"
+      },
+      "genderType": { "type": "keyword" },
+      "minAge": { "type": "integer" },
+      "maxAge": { "type": "integer" },
+      "startDate": { "type": "date" },
+      "endDate": { "type": "date" },
+      "tags": { "type": "keyword" },
+      "howMany": { "type": "integer" },
+      "participation": { "type": "integer" },
+      "confirmed": { "type": "boolean" },
+      "meetType": { "type": "keyword" },
+      "createdTime": { "type": "date" }
+    }
   }
 }

@@ -54,12 +54,10 @@ public class BoardService {
                 .minAge(dto.getMinAge())
                 .maxAge(dto.getMaxAge())
                 .tags(dto.getTags().stream()
-                        .map(tagDto -> InterestTag.from(
-                                        tagDto.getSection(),
-                                        tagDto.getName(),
-                                        tagDto.getDisplayName())
-                                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다: " + tagDto)))
+                        .map(tagDto -> InterestTag.fromName(tagDto.getName())
+                                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다: " + tagDto.getName())))
                         .collect(Collectors.toList()))
+
                 .writer(currentUser)
                 .createdTime(LocalDateTime.now())
                 .updateTime(LocalDateTime.now())
@@ -100,33 +98,12 @@ public class BoardService {
         Board board = boardRepository.findBoardById(id);
 
         List<TagDto> tagDtos = board.getTags().stream()
-                .map(tag -> new TagDto(tag.getSection(), tag.name(), tag.getDisplayName()))
+                .map(tag -> new TagDto(tag.name(), tag.getDisplayName()))
                 .collect(Collectors.toList());
 
         BoardApplication application = boardApplicationRepository
                 .findByBoardIdAndApplicantId(board.getId(), currentUser.getId())
                 .orElse(null);
-
-        // BoardDto 생성
-        /*
-        return new BoardDto(
-                board.getId(),
-                new UserSummaryDto(board.getWriter()),
-                board.getTitle(),
-                board.getGenderType(),
-                board.getMinAge(),
-                board.getMaxAge(),
-                board.getStartDate(),
-                board.getEndDate(),
-                tagDtos,
-                board.getContent(),
-                board.getHowMany(),
-                board.getParticipation(),
-                board.getMeetType(),
-                board.getMeetDetail(),
-                board.getCreatedTime(),
-                board.getUpdateTime()
-        );*/
         return new BoardDto(board, application);
     }
 
@@ -186,22 +163,21 @@ public class BoardService {
         board.setEndDate(dto.getEndDate());
         board.setHowMany(dto.getHowMany());
         board.setGenderType(dto.getGenderType());
-        board.setTags(dto.getTags().stream()
-                .map(tagDto -> InterestTag.from(
-                                tagDto.getSection(),
-                                tagDto.getName(),
-                                tagDto.getDisplayName())
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다: " + tagDto)))
-                .collect(Collectors.toList()));
+
+        board.setTags(
+                dto.getTags().stream()
+                        .map(tagDto -> InterestTag.fromName(tagDto.getName())
+                                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다: " + tagDto.getName())))
+                        .collect(Collectors.toList())
+        );
 
         Board updatedBoard = boardRepository.save(board);
 
-        // 사용자 신청 정보 조회
         BoardApplication application = boardApplicationRepository
                 .findByBoardIdAndApplicantId(updatedBoard.getId(), currentUser.getId())
                 .orElse(null);
 
-        return new BoardDto(updatedBoard, application);  // ✅ userStatus 포함
+        return new BoardDto(updatedBoard, application);
     }
 
 
@@ -224,28 +200,8 @@ public class BoardService {
 
     private BoardDto toDto(Board board, User currentUser) {
         List<TagDto> tagDtos = board.getTags().stream()
-                .map(tag -> new TagDto(tag.getSection(), tag.name(), tag.getDisplayName()))
+                .map(tag -> new TagDto(tag.name(), tag.getDisplayName()))
                 .collect(Collectors.toList());
-/*
-        return new BoardDto(
-                board.getId(),
-                new UserSummaryDto(board.getWriter()),
-                board.getTitle(),
-                board.getGenderType(),
-                board.getMinAge(),
-                board.getMaxAge(),
-                board.getStartDate(),
-                board.getEndDate(),
-                tagDtos,
-                board.getContent(),
-                board.getHowMany(),
-                board.getParticipation(),
-                board.getMeetType(),
-                board.getMeetDetail(),
-                board.getCreatedTime(),
-                board.getUpdateTime()
-        );
-*/
         BoardApplication application = boardApplicationRepository
                 .findByBoardIdAndApplicantId(board.getId(), currentUser.getId())
                 .orElse(null);
@@ -263,7 +219,7 @@ public class BoardService {
             boolean liked = likedBoardIds.contains(board.getId());
 
             List<TagDto> tagDtos = board.getTags().stream()
-                    .map(tag -> new TagDto(tag.getSection(), tag.name(), tag.getDisplayName()))
+                    .map(tag -> new TagDto(tag.name(), tag.getDisplayName()))
                     .collect(Collectors.toList());
 
             // BoardListDto 생성 부분에서 interestTag → tagDtos로만 사용
@@ -290,7 +246,7 @@ public class BoardService {
 
         // board.getTags()가 List<Tag> 타입이고, Tag 엔티티가 section, name, displayName 필드가 있다고 가정
         List<TagDto> tagDtos = board.getTags().stream()
-                .map(tag -> new TagDto(tag.getSection(), tag.name(), tag.getDisplayName()))
+                .map(tag -> new TagDto(tag.name(), tag.getDisplayName()))
                 .collect(Collectors.toList());
 
         return new BoardListDto(
@@ -323,10 +279,8 @@ public class BoardService {
                 .howMany(dto.getHowMany())
                 .genderType(dto.getGenderType())
                 .tags(dto.getTags().stream()
-                        .map(tagDto -> InterestTag.from(
-                                        tagDto.getSection(),
-                                        tagDto.getName(),         // 이 값은 enum 이름 (예: "HIKING") 이어야 함
-                                        tagDto.getDisplayName())
+                        .map(tagDto -> InterestTag.fromName(
+                                        tagDto.getName())
                                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다: " + tagDto)))
                         .collect(Collectors.toList()))
                 .build();
