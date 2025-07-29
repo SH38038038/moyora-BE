@@ -1,2 +1,3 @@
 moyora/** linguist-documentation=false
 moyora/** linguist-vendored=false
+*.html linguist-detectable=false
