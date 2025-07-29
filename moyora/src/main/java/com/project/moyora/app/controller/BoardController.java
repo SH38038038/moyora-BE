@@ -101,7 +101,7 @@ public class BoardController {
         boardService.lockParticipantsAfterNoticeCreation(boardId);
 
         BoardDto boardDto = boardService.getBoardById(boardId, user); // 수정된 호출
-        ChatRoom chatRoom = chatRoomService.createRoomForLockedBoard(boardDto.toEntity()); // BoardDto에서 Board로 변환
+        ChatRoom chatRoom = chatRoomService.createRoomForLockedBoard(boardService.getBoardEntityById(boardId)); // BoardDto에서 Board로 변환
 
         String roomUrl = "/chatroom/" + chatRoom.getId(); // 채팅방 주소
         return ApiResponseTemplete.success(SuccessCode.UPDATE_POST_SUCCESS, roomUrl);

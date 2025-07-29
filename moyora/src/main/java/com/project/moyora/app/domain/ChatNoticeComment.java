@@ -12,19 +12,18 @@ import java.time.LocalDateTime;
 @Entity
 @Getter
 @Setter
-public class ChatMessage {
+public class ChatNoticeComment {
     @Id
     @GeneratedValue
     private Long id;
 
-    private String sender;
-    private String content;
-
-    private LocalDateTime sentAt;
+    @ManyToOne
+    private ChatMessage notice; // 공지 채팅
 
     @ManyToOne
-    private ChatRoom chatRoom;
+    private User writer;
 
-    private boolean isNotice = false;
+    private String content;
 
+    private LocalDateTime createdAt;
 }

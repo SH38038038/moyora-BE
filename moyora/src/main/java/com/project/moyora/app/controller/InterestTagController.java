@@ -1,5 +1,6 @@
 package com.project.moyora.app.controller;
 
+import com.project.moyora.app.domain.Tag;
 import com.project.moyora.app.dto.InterestTagGroupDto;
 import com.project.moyora.app.service.InterestTagService;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +21,7 @@ public class InterestTagController {
     }
 
     @GetMapping("/interest-tags/select")
-    public ResponseEntity<List<InterestTagGroupDto>> getInterestTags() {
-        return ResponseEntity.ok(interestTagService.getGroupedInterestTags());
+    public ResponseEntity<List<Tag>> getInterestTags() {
+        return ResponseEntity.ok(interestTagService.getAllInterestTags());
     }
 }

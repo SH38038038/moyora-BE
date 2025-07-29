@@ -12,15 +12,20 @@ import java.util.stream.Collectors;
 
 @Service
 public class InterestTagService {
-
+/*
     public List<InterestTagGroupDto> getGroupedInterestTags() {
         Map<String, List<Tag>> grouped = Arrays.stream(InterestTag.values())
-                .map(tag -> new Tag(tag.getSection(), tag.name(), tag.getDisplayName()))
-                .collect(Collectors.groupingBy(Tag::getSection));
+                .map(tag -> new Tag(tag.name(), tag.getDisplayName()))
+                .collect(Collectors.groupingBy();
 
         return grouped.entrySet().stream()
                 .map(entry -> new InterestTagGroupDto(entry.getKey(), entry.getValue()))
                 .collect(Collectors.toList());
     }
-
+*/
+public List<Tag> getAllInterestTags() {
+    return Arrays.stream(InterestTag.values())
+            .map(tag -> new Tag(tag.name(), tag.getDisplayName()))
+            .collect(Collectors.toList());
+}
 }

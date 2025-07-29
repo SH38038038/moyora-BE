@@ -1,6 +1,7 @@
 package com.project.moyora.global.exception;
 
 
+import co.elastic.clients.elasticsearch.nodes.Http;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -82,7 +83,10 @@ public enum ErrorCode {
 
     ALREADY_LIKED(HttpStatus.BAD_REQUEST, "이미 찜한 게시물입니다."),
     BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "게시글을 찾을 수 없습니다."),
-    LIKE_NOT_FOUND(HttpStatus.BAD_REQUEST, "찜한 게시물이 아닙니다.");
+    LIKE_NOT_FOUND(HttpStatus.BAD_REQUEST, "찜한 게시물이 아닙니다."),
+
+    CHATMESSAGE_NOT_FOUND(HttpStatus.NOT_FOUND, "메세지를 찾을 수 없습니다. "),
+    CHATROOM_NOT_FOUND(HttpStatus.NOT_FOUND, "채팅방을 찾을 수 없습니다.");
 
 
 

@@ -163,7 +163,7 @@ public class MyPageController {
             boolean liked = likeRepository.findByUserAndBoard(user, board).isPresent();
 
             List<TagDto> tagDtos = board.getTags().stream()
-                    .map(tag -> new TagDto(tag.getSection(), tag.name(), tag.getDisplayName()))
+                    .map(tag -> new TagDto(tag.name(), tag.getDisplayName()))
                     .collect(Collectors.toList());
 
             return new BoardListDto(

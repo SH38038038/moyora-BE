@@ -6,7 +6,9 @@ import com.project.moyora.app.repository.BoardApplicationRepository;
 import com.project.moyora.app.repository.BoardRepository;
 import com.project.moyora.app.repository.LikeRepository;
 import com.project.moyora.app.repository.ReportRepository;
+import com.project.moyora.global.exception.ErrorCode;
 import com.project.moyora.global.exception.ResourceNotFoundException;
+import com.project.moyora.global.exception.model.CustomException;
 import com.project.moyora.global.tag.InterestTag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -361,6 +363,12 @@ public class BoardService {
                 .toList();
 
         return toListDto(filtered, currentUser); // 👍 좋아요 정보 포함된 BoardListDto로 반환
+    }
+
+    @Transactional(readOnly = true)
+    public Board getBoardEntityById(Long boardId) {
+        return boardRepository.findById(boardId)
+                .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND, null));
     }
 
 

@@ -7,12 +7,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Tag {
-    private String section;
     private String name;
     private String displayName;
 
-    public Tag(String section, String name, String displayName) {
-        this.section = section;
+    public Tag(String name, String displayName) {
+
         this.name = name;
         this.displayName = displayName;
     }

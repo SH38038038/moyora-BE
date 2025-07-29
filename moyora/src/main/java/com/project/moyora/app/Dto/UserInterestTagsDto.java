@@ -14,7 +14,7 @@ public class UserInterestTagsDto {
 
     public UserInterestTagsDto(Set<InterestTag> tags) {
         this.interestTags = tags.stream()
-                .map(tag -> new Tag(tag.getSection(), tag.name(), tag.getDisplayName()))
+                .map(tag -> new Tag(tag.name(), tag.getDisplayName()))
                 .collect(Collectors.toList());
     }
 }

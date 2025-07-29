@@ -7,24 +7,17 @@ import jakarta.persistence.ManyToOne;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @Setter
-public class ChatMessage {
+public class ChatNoticeLike {
     @Id
     @GeneratedValue
     private Long id;
 
-    private String sender;
-    private String content;
-
-    private LocalDateTime sentAt;
+    @ManyToOne
+    private ChatMessage notice;
 
     @ManyToOne
-    private ChatRoom chatRoom;
-
-    private boolean isNotice = false;
-
+    private User user;
 }

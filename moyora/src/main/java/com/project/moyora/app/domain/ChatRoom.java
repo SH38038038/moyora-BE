@@ -15,6 +15,7 @@ public class ChatRoom {
     @GeneratedValue
     private Long id;
 
+    @Column(nullable = false)
     private String name;
 
     @OneToOne

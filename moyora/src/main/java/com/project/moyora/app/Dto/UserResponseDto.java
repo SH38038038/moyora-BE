@@ -25,11 +25,10 @@ public class UserResponseDto {
     @Getter
     @AllArgsConstructor
     public static class InterestTagDto {
-        private String section;
         private String name;
 
         public static InterestTagDto from(InterestTag tag) {
-            return new InterestTagDto(tag.getSection(), tag.getDisplayName());
+            return new InterestTagDto(tag.getDisplayName());
         }
     }
 }

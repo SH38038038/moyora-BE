@@ -2,6 +2,7 @@ package com.project.moyora.app.service;
 
 import com.project.moyora.app.domain.*;
 import com.project.moyora.app.repository.BoardApplicationRepository;
+import com.project.moyora.app.repository.ChatMessageRepository;
 import com.project.moyora.app.repository.ChatRoomRepository;
 import com.project.moyora.app.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class ChatRoomService {
     private final ChatRoomRepository chatRoomRepository;
     private final BoardApplicationRepository applicationRepository;
     private final UserRepository userRepository;
+    private final ChatMessageRepository chatMessageRepository;
 
     @Transactional
     public ChatRoom createRoomForLockedBoard(Board board) {
@@ -39,5 +41,4 @@ public class ChatRoomService {
 
         return chatRoomRepository.save(room);
     }
-
 }
