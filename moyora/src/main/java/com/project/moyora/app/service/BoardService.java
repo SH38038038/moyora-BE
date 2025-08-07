@@ -2,10 +2,7 @@ package com.project.moyora.app.service;
 
 import com.project.moyora.app.dto.*;
 import com.project.moyora.app.domain.*;
-import com.project.moyora.app.repository.BoardApplicationRepository;
-import com.project.moyora.app.repository.BoardRepository;
-import com.project.moyora.app.repository.LikeRepository;
-import com.project.moyora.app.repository.ReportRepository;
+import com.project.moyora.app.repository.*;
 import com.project.moyora.global.exception.ErrorCode;
 import com.project.moyora.global.exception.ResourceNotFoundException;
 import com.project.moyora.global.exception.model.CustomException;
@@ -13,17 +10,17 @@ import com.project.moyora.global.tag.InterestTag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -35,9 +32,9 @@ public class BoardService {
     private final LikeRepository likeRepository;
     private final BoardApplicationRepository boardApplicationRepository;
     private final ReportRepository reportRepository;
-    private final BoardSpecification boardSpecification;
     private final BoardSearchService boardSearchService;
-
+    private final UserSubTagRepository userSubTagRepository;
+/*
     public BoardDto createBoard(BoardDto dto, User currentUser) {
         if (!Boolean.TRUE.equals(currentUser.getVerified())) {
             throw new AccessDeniedException("인증된 사용자만 글을 작성할 수 있습니다.");
@@ -78,7 +75,99 @@ public class BoardService {
 
         return new BoardDto(savedBoard, application);  // ✅ userStatus 포함
     }
+*/
 
+    public BoardDto createBoard(BoardDto dto, User currentUser, List<String> subTagNames) {
+        if (!Boolean.TRUE.equals(currentUser.getVerified())) {
+            throw new AccessDeniedException("인증된 사용자만 글을 작성할 수 있습니다.");
+        }
+
+        // ✅ 1. Python 서버로 게시글 내용 전달
+        List<String> subTags = fetchSubTagsFromPython(dto.getTitle(), dto.getContent());
+
+        // ✅ 2. 대분류 태그 enum 매핑
+        List<InterestTag> majorTags = dto.getTags().stream()
+                .map(tagDto -> InterestTag.fromName(tagDto.getName())
+                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다: " + tagDto.getName())))
+                .collect(Collectors.toList());
+
+        // ✅ 3. Board 생성 및 저장
+        Board board = Board.builder()
+                .title(dto.getTitle())
+                .content(dto.getContent())
+                .startDate(dto.getStartDate())
+                .endDate(dto.getEndDate())
+                .howMany(dto.getHowMany())
+                .participation(0)
+                .meetType(dto.getMeetType())
+                .meetDetail(dto.getMeetDetail())
+                .genderType(dto.getGenderType())
+                .minAge(dto.getMinAge())
+                .maxAge(dto.getMaxAge())
+                .tags(majorTags)
+                .writer(currentUser)
+                .createdTime(LocalDateTime.now())
+                .updateTime(LocalDateTime.now())
+                .build();
+
+        List<SubTag> subTagEntities = subTags.stream()
+                .map(name -> SubTag.builder()
+                        .name(name)
+                        .board(board)  // 양방향 연관관계라면 반드시 설정
+                        .build())
+                .collect(Collectors.toList());
+
+        board.setSubTags(subTagEntities);
+
+        Board savedBoard = boardRepository.save(board);
+        // 신청 엔티티 생성
+        BoardApplication application = BoardApplication.builder()
+                .board(savedBoard)
+                .applicant(currentUser)
+                .status(ApplicationStatus.LOCKED)
+                .build();
+        boardApplicationRepository.save(application);
+
+        boardSearchService.indexBoard(board); // ElasticSearch 연동
+
+        for (SubTag subTag : savedBoard.getSubTags()) {
+            UserSubTag userSubTag = UserSubTag.builder()
+                    .user(currentUser)
+                    .subTag(subTag)
+                    .category(Category.WRITTEN)
+                    .build();
+            userSubTagRepository.save(userSubTag);
+        }
+
+
+        return new BoardDto(savedBoard, application); // userStatus 포함
+    }
+
+
+    private List<String> fetchSubTagsFromPython(String title, String content) {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            Map<String, String> requestBody = new HashMap<>();
+            requestBody.put("title", title);
+            requestBody.put("content", content);
+
+            HttpEntity<Map<String, String>> request = new HttpEntity<>(requestBody, headers);
+
+            String pythonUrl = "https://a533f9c5e423.ngrok-free.app/tagging";
+            ResponseEntity<SubTagResponse> response = restTemplate.postForEntity(
+                    pythonUrl, request, SubTagResponse.class);
+
+            if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
+                return response.getBody().getTags();
+            }
+        } catch (Exception e) {
+            log.error("파이썬 서버 태그 추출 실패", e);
+        }
+        return Collections.emptyList(); // 실패 시 빈 리스트
+    }
 
 
     public List<BoardListDto> getAllBoards(User currentUser) {
@@ -198,6 +287,8 @@ public class BoardService {
         }
 
         boardRepository.delete(board);
+
+        userSubTagRepository.deleteByUserAndCategory(currentUser, Category.WRITTEN);
     }
 
     private BoardDto toDto(Board board, User currentUser) {
@@ -225,6 +316,10 @@ public class BoardService {
                     .collect(Collectors.toList());
 
             // BoardListDto 생성 부분에서 interestTag → tagDtos로만 사용
+            List<String> subTagNames = board.getSubTags().stream()
+                    .map(SubTag::getName)
+                    .collect(Collectors.toList());
+
             return new BoardListDto(
                     board.getTitle(),
                     board.getStartDate(),
@@ -232,12 +327,14 @@ public class BoardService {
                     board.getMeetType(),
                     board.getMeetDetail(),
                     tagDtos,
+                    subTagNames,  // 이름 리스트 전달
                     board.getHowMany(),
                     board.getParticipation(),
                     board.getId(),
                     liked,
                     board.isConfirmed()
             );
+
 
         }).collect(Collectors.toList());
     }
@@ -251,20 +348,24 @@ public class BoardService {
                 .map(tag -> new TagDto(tag.name(), tag.getDisplayName()))
                 .collect(Collectors.toList());
 
+        List<String> subTagNames = board.getSubTags().stream()
+                .map(SubTag::getName)
+                .collect(Collectors.toList());
+
         return new BoardListDto(
                 board.getTitle(),
                 board.getStartDate(),
                 board.getEndDate(),
                 board.getMeetType(),
                 board.getMeetDetail(),
-                tagDtos,           // <-- List<TagDto>만 넘김
+                tagDtos,
+                subTagNames,  // 이름 리스트 전달
                 board.getHowMany(),
                 board.getParticipation(),
                 board.getId(),
                 liked,
                 board.isConfirmed()
         );
-
 
     }
 

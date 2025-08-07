@@ -1,6 +1,7 @@
 package com.project.moyora.app.dto;
 
 import com.project.moyora.app.domain.Board;
+import com.project.moyora.app.domain.SubTag;
 import com.project.moyora.app.domain.MeetType;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.app.repository.LikeRepository;
@@ -27,6 +28,7 @@ public class BoardListDto {
     private MeetType meetType;
     private String meetDetail;
     private List<TagDto> tags;
+    private List<String> sub_tags;
     private Integer howMany;
     private Integer participation;
     private Long detailId;
@@ -55,6 +57,10 @@ public class BoardListDto {
         boolean isLiked = likeRepository.existsByUserAndBoard(user, board);
         log.debug("[DEBUG] user {} liked board {}: {}", user.getId(), board.getId(), isLiked);
 
+        List<String> subTagNames = board.getSubTags().stream()
+                .map(SubTag::getName)
+                .collect(Collectors.toList());
+
         return BoardListDto.builder()
                 .title(board.getTitle())
                 .startDate(board.getStartDate())
@@ -62,6 +68,7 @@ public class BoardListDto {
                 .meetType(board.getMeetType())
                 .meetDetail(board.getMeetDetail())
                 .tags(tagDtos)
+                .sub_tags(subTagNames)
                 .howMany(board.getHowMany())
                 .participation(board.getParticipation())
                 .detailId(board.getId())

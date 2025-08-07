@@ -5,6 +5,7 @@ import com.project.moyora.app.dto.ApplicationResponseDto;
 import com.project.moyora.app.domain.*;
 import com.project.moyora.app.repository.BoardApplicationRepository;
 import com.project.moyora.app.repository.BoardRepository;
+import com.project.moyora.app.repository.UserSubTagRepository;
 import com.project.moyora.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -20,6 +21,8 @@ public class ApplicationService {
 
     private final BoardApplicationRepository applicationRepository;
     private final BoardRepository boardRepository;
+    private final UserSubTagRepository userSubTagRepository;  // 추가 필요
+
 
     // 1. 신청 처리 (WAITING 상태로)
     public ApplicationDto applyForBoard(Long boardId, CustomUserDetails currentUser) {
@@ -135,9 +138,36 @@ public class ApplicationService {
         // 상태 및 변경일 갱신
         application.setStatus(status);
         application.setAppliedAt(LocalDateTime.now());
-
-        // 저장
         applicationRepository.save(application);
+
+        // ------------------------------
+        // 확정 상태로 변경되었을 때 (ACCEPTED 또는 LOCKED), 이전 상태가 확정 상태가 아니면 UserSubTag 저장
+        if ((status == ApplicationStatus.ACCEPTED || status == ApplicationStatus.LOCKED) &&
+                (currentStatus != ApplicationStatus.ACCEPTED && currentStatus != ApplicationStatus.LOCKED)) {
+
+            List<SubTag> subTags = board.getSubTags();
+
+            for (SubTag subTag : subTags) {
+                boolean exists = userSubTagRepository.existsByUserAndSubTag(requester.getUser(), subTag);
+                if (!exists) {
+                    UserSubTag ust = UserSubTag.builder()
+                            .user(requester.getUser())
+                            .subTag(subTag)
+                            .category(Category.PARTICIPATING)  // 예: 참여중인 태그 구분용 enum
+                            .build();
+                    userSubTagRepository.save(ust);
+                }
+            }
+        }
+
+        // 상태가 확정(ACCEPTED, LOCKED)에서 취소 또는 거절(REJECTED, CANCELED)로 변경되면 UserSubTag 삭제
+        if ((currentStatus == ApplicationStatus.ACCEPTED || currentStatus == ApplicationStatus.LOCKED) &&
+                (status == ApplicationStatus.REJECTED || status == ApplicationStatus.CANCELED)) {
+
+            // 해당 유저가 참여중인 태그 삭제 (삭제 방식은 설계에 따라 다름)
+            userSubTagRepository.deleteByUserAndCategory(requester.getUser(), Category.PARTICIPATING);
+        }
+
     }
 
 

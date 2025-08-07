@@ -11,16 +11,22 @@ public record BoardResponseDto(
         String title,
         String content,
         MeetType meetType,
-        List<InterestTag> interestTags,  // 단일 -> 리스트로 변경
+        List<InterestTag> interestTags,
+        List<String> sub_tags,
         UserSimpleDto writer
 ) {
     public static BoardResponseDto from(Board board) {
+        List<String> subTagNames = board.getSubTags().stream()
+                .map(subTag -> subTag.getName())
+                .toList();
+
         return new BoardResponseDto(
                 board.getId(),
                 board.getTitle(),
                 board.getContent(),
                 board.getMeetType(),
-                board.getTags(),  // List<InterestTag> 그대로 사용
+                board.getTags(),
+                subTagNames,
                 UserSimpleDto.from(board.getWriter())
         );
     }

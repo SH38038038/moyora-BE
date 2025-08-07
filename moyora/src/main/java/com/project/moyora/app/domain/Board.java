@@ -46,6 +46,10 @@ public class Board {
     @Enumerated(EnumType.STRING)
     private List<InterestTag> tags = new ArrayList<>();
 
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SubTag> subTags = new ArrayList<>();
+
+
     @Column(columnDefinition = "TEXT")
     private String content;
 

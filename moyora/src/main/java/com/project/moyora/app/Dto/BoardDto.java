@@ -22,6 +22,7 @@ public class BoardDto {
     private LocalDate startDate;
     private LocalDate endDate;
     private List<TagDto> tags;
+    private List<String> sub_tags;
     private String content;
     private Integer howMany;
     private Integer participation;
@@ -46,6 +47,9 @@ public class BoardDto {
         this.startDate = board.getStartDate();
         this.endDate = board.getEndDate();
         this.tags = board.getTags().stream().map(TagDto::from).collect(Collectors.toList());
+        this.sub_tags = board.getSubTags().stream()
+                .map(SubTag::getName)
+                .collect(Collectors.toList());
         this.content = board.getContent();
         this.howMany = board.getHowMany();
         this.participation = board.getParticipation();

@@ -5,10 +5,7 @@ import com.project.moyora.app.dto.BoardListDto;
 import com.project.moyora.app.dto.TagDto;
 import com.project.moyora.app.dto.UserInterestTagsDto;
 import com.project.moyora.app.domain.*;
-import com.project.moyora.app.repository.BoardApplicationRepository;
-import com.project.moyora.app.repository.BoardRepository;
-import com.project.moyora.app.repository.LikeRepository;
-import com.project.moyora.app.repository.UserRepository;
+import com.project.moyora.app.repository.*;
 import com.project.moyora.app.service.UserService;
 import com.project.moyora.global.exception.ErrorCode;
 import com.project.moyora.global.exception.SuccessCode;
@@ -36,6 +33,7 @@ public class MyPageController {
     private final LikeRepository likeRepository;
     private final BoardApplicationRepository boardApplicationRepository;
     private final UserService userService;
+    private final UserSubTagRepository userSubTagRepository;
 
     // 찜 추가
     @PostMapping("/boards/{boardId}/liked/{userId}")
@@ -55,8 +53,19 @@ public class MyPageController {
         like.setBoard(board);
         likeRepository.save(like);
 
+        // board에 달린 subTags를 UserSubTag로 category=LIKED 저장
+        for (SubTag subTag : board.getSubTags()) {
+            UserSubTag userSubTag = UserSubTag.builder()
+                    .user(user)
+                    .subTag(subTag)
+                    .category(Category.LIKED)  // 찜 카테고리
+                    .build();
+            userSubTagRepository.save(userSubTag);
+        }
+
         return ApiResponseTemplete.success(SuccessCode.CREATED, "게시물을 찜했습니다.");
     }
+
 
     // 찜 취소
     @DeleteMapping("/boards/{boardId}/liked/{userId}")
@@ -70,18 +79,39 @@ public class MyPageController {
                 .orElseThrow(() -> new IllegalArgumentException("찜한 게시물이 아닙니다."));
 
         likeRepository.delete(like);
+
+        // 찜 취소 시 관련 UserSubTag 삭제
+        for (SubTag subTag : board.getSubTags()) {
+            userSubTagRepository.deleteByUserAndSubTagAndCategory(user, subTag, Category.LIKED);
+        }
+
         return ApiResponseTemplete.success(SuccessCode.CREATE_POST_SUCCESS, "게시물 찜을 취소했습니다.");
     }
+
 
     // 관심 태그 조회
     @Transactional
     @GetMapping("/interest-tags")
     public ResponseEntity<ApiResponseTemplete<UserInterestTagsDto>> getInterestTags(Principal principal) {
         User user = getUserByPrincipal(principal);
-        UserInterestTagsDto dto = new UserInterestTagsDto(user.getInterestTags());
+
+        // 유저별 소분류 태그 조회
+        List<SubTag> subTags = userSubTagRepository.findDistinctSubTagsByUser(user);
+
+        // name 기준으로 중복 제거
+        Map<String, SubTag> nameToSubTagMap = new LinkedHashMap<>();
+        for (SubTag subTag : subTags) {
+            nameToSubTagMap.putIfAbsent(subTag.getName(), subTag);
+        }
+
+        Set<SubTag> uniqueSubTags = new HashSet<>(nameToSubTagMap.values());
+
+        UserInterestTagsDto dto = new UserInterestTagsDto(uniqueSubTags);
+
         return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, dto);
     }
 
+/*
     // 관심 태그 수정
     @PutMapping("/interest-tags")
     public ResponseEntity<ApiResponseTemplete<String>> updateInterestTags(
@@ -94,7 +124,7 @@ public class MyPageController {
         userService.updateInterestTags(principal, tags);
         return ApiResponseTemplete.success(SuccessCode.UPDATE_POST_SUCCESS, "관심 태그 수정 완료");
     }
-
+*/
 
     // 참여 중인 모임
     @Transactional
@@ -166,19 +196,25 @@ public class MyPageController {
                     .map(tag -> new TagDto(tag.name(), tag.getDisplayName()))
                     .collect(Collectors.toList());
 
+            List<String> subTagNames = board.getSubTags().stream()
+                    .map(SubTag::getName)
+                    .collect(Collectors.toList());
+
             return new BoardListDto(
                     board.getTitle(),
                     board.getStartDate(),
                     board.getEndDate(),
                     board.getMeetType(),
                     board.getMeetDetail(),
-                    tagDtos,    // 변환된 TagDto 리스트 전달
+                    tagDtos,
+                    subTagNames,  // 이름 리스트 전달
                     board.getHowMany(),
                     board.getParticipation(),
                     board.getId(),
                     liked,
                     board.isConfirmed()
             );
+
         }).collect(Collectors.toList());
     }
 

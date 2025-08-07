@@ -4,21 +4,12 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public enum InterestTag {
-    SPORTS("스포츠"),
-    MUSIC_APPRECIATION("음악감상"),
-    IDOL("아이돌"),
-    GAME("게임"),
-    TRAVEL("여행"),
-    OUTDOOR("아웃도어"),
-    DRAWING("그림"),
-    PHOTOGRAPHY("사진"),
-    WRITING("글쓰기"),
-    VIDEO_CONTENT("영상 콘텐츠"),
-    STUDY("공부"),
+    HOBBY("취미/여가"),
+    SPORTS("운동/스포츠"),
     SELF_IMPROVEMENT("자기계발"),
-    FOOD_EXPLORATION("맛집탐방"),
-    DAILY_SHARING("일상공유"),
-    FINANCE("재테크");
+    SOCIAL("소셜/네트워킹"),
+    CULTURE_ART("문화/예술"),
+    TRAVEL_OUTDOOR("여행/아웃도어");
 
     private final String displayName;
 

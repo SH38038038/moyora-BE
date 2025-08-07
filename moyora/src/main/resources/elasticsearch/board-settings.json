@@ -12,6 +12,11 @@
           "type": "ngram",
           "min_gram": 2,
           "max_gram": 3
+        },
+        "edge_ngram_filter": {
+          "type": "edge_ngram",
+          "min_gram": 2,
+          "max_gram": 25
         }
       },
       "analyzer": {
@@ -22,8 +27,44 @@
             "lowercase",
             "ngram_filter"
           ]
+        },
+        "korean_edge_ngram_analyzer": {
+          "type": "custom",
+          "tokenizer": "nori_user_tokenizer",
+          "filter": [
+            "lowercase",
+            "edge_ngram_filter"
+          ]
         }
       }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "id": { "type": "long" },
+      "title": {
+        "type": "text",
+        "analyzer": "korean_edge_ngram_analyzer"
+      },
+      "content": {
+        "type": "text",
+        "analyzer": "korean_ngram_analyzer"
+      },
+      "meetDetail": {
+        "type": "text",
+        "analyzer": "korean_ngram_analyzer"
+      },
+      "genderType": { "type": "keyword" },
+      "minAge": { "type": "integer" },
+      "maxAge": { "type": "integer" },
+      "startDate": { "type": "date" },
+      "endDate": { "type": "date" },
+      "tags": { "type": "keyword" },
+      "howMany": { "type": "integer" },
+      "participation": { "type": "integer" },
+      "confirmed": { "type": "boolean" },
+      "meetType": { "type": "keyword" },
+      "createdTime": { "type": "date" }
     }
   }
 }

@@ -11,5 +11,5 @@ import java.util.List;
 @Builder
 public class HomeResponseDto {
     private List<BoardListDto> recommendedBoards;
-    private List<TagDto> popularTags;
+    private List<SubTagDto> popularTags;
 }

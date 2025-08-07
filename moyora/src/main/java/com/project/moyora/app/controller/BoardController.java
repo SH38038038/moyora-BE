@@ -52,7 +52,7 @@ public class BoardController {
             throw new AccessDeniedException("인증된 사용자만 글을 작성할 수 있습니다.");
         }
 
-        BoardDto created = boardService.createBoard(dto, user);
+        BoardDto created = boardService.createBoard(dto, user, dto.getSub_tags());
         return ResponseEntity.ok(created);
     }
 
