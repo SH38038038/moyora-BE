@@ -10,6 +10,7 @@ import com.project.moyora.app.repository.ChatMessageRepository;
 import com.project.moyora.app.repository.ChatParticipantRepository;
 import com.project.moyora.app.repository.ChatRoomRepository;
 import com.project.moyora.app.repository.UserRepository;
+import com.project.moyora.app.service.ChatService;
 import com.project.moyora.global.exception.ErrorCode;
 import com.project.moyora.global.exception.model.CustomException;
 import com.project.moyora.global.security.CustomUserDetails;
@@ -23,9 +24,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
 import java.time.LocalDateTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,6 +42,7 @@ public class ChatController {
     private final ChatMessageRepository chatMessageRepository;
     private final UserRepository userRepository;
     private final ChatParticipantRepository chatParticipantRepository;
+    private final ChatService chatService;
 
     @MessageMapping("/chat.send")
     public void sendMessage(ChatMessageDto messageDto, Principal principal) {
@@ -84,6 +88,7 @@ public class ChatController {
         return "chatroom"; // chatroom.html 뷰
     }
 
+    // 기존
     @GetMapping("/chatroom/{roomId}/messages")
     public ResponseEntity<List<ChatMessageDto>> getChatMessages(@PathVariable Long roomId) {
         List<ChatMessage> messages = chatMessageRepository.findByChatRoomIdOrderBySentAtAsc(roomId);
@@ -99,6 +104,33 @@ public class ChatController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
+
+    // 무한 스크롤
+    @GetMapping("/chatroom/{roomId}/messages/page")
+    public ResponseEntity<List<ChatMessageDto>> getPreviousMessages(
+            @PathVariable Long roomId,
+            @RequestParam(required = false) Long lastMessageId,  // 마지막으로 받은 메시지 id
+            @RequestParam(defaultValue = "20") int size            // 한번에 불러올 메시지 수
+    ) {
+        List<ChatMessage> messages = chatService.getPreviousMessages(roomId, lastMessageId, size);
+
+        // 클라이언트가 편하게 보게 오름차순(시간순)으로 정렬 변경
+        List<ChatMessageDto> dtos = messages.stream()
+                .sorted(Comparator.comparing(ChatMessage::getId))
+                .map(msg -> {
+                    ChatMessageDto dto = new ChatMessageDto();
+                    dto.setRoomId(msg.getChatRoom().getId());
+                    dto.setSender(msg.getSender());
+                    dto.setContent(msg.getContent());
+                    // dto.setSentAt(msg.getSentAt());
+                    dto.setId(msg.getId());  // 커서용 id 포함 필드 추가 필요
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(dtos);
+    }
+
 
     @GetMapping("/chatrooms/my")
     public ResponseEntity<List<ChatRoomDto>> getMyChatRooms(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
