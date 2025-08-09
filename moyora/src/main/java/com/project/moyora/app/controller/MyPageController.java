@@ -111,20 +111,26 @@ public class MyPageController {
         return ApiResponseTemplete.success(SuccessCode.GET_POST_SUCCESS, dto);
     }
 
-/*
-    // 관심 태그 수정
-    @PutMapping("/interest-tags")
-    public ResponseEntity<ApiResponseTemplete<String>> updateInterestTags(
-            @RequestBody Set<String> tagNames, Principal principal) {
+    // 관심 태그 삭제
+    @Transactional
+    @DeleteMapping("/interest-tags/{subTagId}")
+    public ResponseEntity<ApiResponseTemplete<String>> deleteInterestTag(
+            @PathVariable Long subTagId, Principal principal) {
 
-        Set<InterestTag> tags = tagNames.stream()
-                .map(InterestTag::valueOf)
-                .collect(Collectors.toSet());
+        User user = getUserByPrincipal(principal);
 
-        userService.updateInterestTags(principal, tags);
-        return ApiResponseTemplete.success(SuccessCode.UPDATE_POST_SUCCESS, "관심 태그 수정 완료");
+        // User와 연관된 SubTag 중에서 해당 ID의 태그를 삭제
+        Optional<UserSubTag> userSubTagOpt = userSubTagRepository.findByUserAndSubTagId(user, subTagId);
+        if (userSubTagOpt.isEmpty()) {
+            return ApiResponseTemplete.error(ErrorCode.TAG_NOT_FOUND, "해당 관심 태그가 없습니다.");
+        }
+
+        UserSubTag userSubTag = userSubTagOpt.get();
+        userSubTagRepository.delete(userSubTag);
+
+        return ApiResponseTemplete.success(SuccessCode.DELETE_POST_SUCCESS, "관심 태그 삭제 완료");
     }
-*/
+
 
     // 참여 중인 모임
     @Transactional

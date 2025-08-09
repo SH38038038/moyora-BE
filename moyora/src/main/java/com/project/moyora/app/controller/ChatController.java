@@ -74,10 +74,12 @@ public class ChatController {
         log.info("🔥 메시지 수신됨: roomId={}, sender={}, content={}",
                 messageDto.getRoomId(), sender.getName(), messageDto.getContent());
 
+        // 반환할 DTO에 메시지 ID 포함
         ChatMessageDto sendDto = new ChatMessageDto();
         sendDto.setRoomId(room.getId());
         sendDto.setSender(sender.getName());
         sendDto.setContent(messageDto.getContent());
+        sendDto.setId(msg.getId());  // 저장된 메시지의 ID를 반환
 
         messagingTemplate.convertAndSend("/topic/chatroom/" + room.getId(), sendDto);
     }
@@ -98,7 +100,7 @@ public class ChatController {
                     dto.setRoomId(msg.getChatRoom().getId());
                     dto.setSender(msg.getSender());
                     dto.setContent(msg.getContent());
-                    //dto.setSentAt(msg.getSentAt());
+                    dto.setId(msg.getId());  // 메시지 ID 추가
                     return dto;
                 })
                 .collect(Collectors.toList());
@@ -122,15 +124,13 @@ public class ChatController {
                     dto.setRoomId(msg.getChatRoom().getId());
                     dto.setSender(msg.getSender());
                     dto.setContent(msg.getContent());
-                    // dto.setSentAt(msg.getSentAt());
-                    dto.setId(msg.getId());  // 커서용 id 포함 필드 추가 필요
+                    dto.setId(msg.getId());  // 커서용 ID 포함
                     return dto;
                 })
                 .collect(Collectors.toList());
 
         return ResponseEntity.ok(dtos);
     }
-
 
     @GetMapping("/chatrooms/my")
     public ResponseEntity<List<ChatRoomDto>> getMyChatRooms(@AuthenticationPrincipal CustomUserDetails customUserDetails) {
@@ -150,5 +150,4 @@ public class ChatController {
 
         return ResponseEntity.ok(chatRooms);
     }
-
 }

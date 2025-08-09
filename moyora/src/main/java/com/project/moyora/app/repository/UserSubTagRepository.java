@@ -11,6 +11,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface UserSubTagRepository extends JpaRepository<UserSubTag, Long> {
     List<UserSubTag> findByUserAndCategory(User user, Category category);
@@ -30,5 +31,6 @@ public interface UserSubTagRepository extends JpaRepository<UserSubTag, Long> {
     void deleteByUserAndSubTagAndCategory(User user, SubTag subTag, Category category);
 
 
-}
+    Optional<UserSubTag> findByUserAndSubTagId(User user, Long subTagId);
 
+}
