@@ -28,6 +28,7 @@ public class BoardDto {
     private Integer participation;
     private MeetType meetType;
     private String meetDetail;
+    private String recommendedSearchKeyword;
     private LocalDateTime createdTime;
     private LocalDateTime updateTime;
     private ApplicationStatus userStatus;
@@ -55,6 +56,7 @@ public class BoardDto {
         this.participation = board.getParticipation();
         this.meetType = board.getMeetType();
         this.meetDetail = board.getMeetDetail();
+        this.recommendedSearchKeyword = board.getRecommendedSearchKeyword();
         this.createdTime = board.getCreatedTime();
         this.updateTime = board.getUpdateTime();
         if (application != null) {

@@ -55,7 +55,7 @@ public enum ErrorCode {
     NOT_FOUND_TODAY_EVENT_EXCEPTION(HttpStatus.NOT_FOUND, "조회에 성공했으나 오늘 하루 일정이 없습니다."),
     NOT_FOUND_USER_EXCEPTION(HttpStatus.NOT_FOUND, "해당 검색결과에 해당하는 사용자를 찾을 수 없습니다."),
     NOT_FOUND_STUDENT_NUM_EXCEPTION(HttpStatus.NOT_FOUND, "해당 학번에 해당하는 학생을 찾을 수 없습니다"),
-
+    RESOURCE_NOT_FOUND(HttpStatus.NOT_FOUND, "추천 검색어를 찾을 수 없습니다."),
     // 409 Conflict
     ALREADY_EXIST_STUDENT_EXCEPTION(HttpStatus.CONFLICT, "이미 회원가입이 완료된 사용자입니다."),
     ALREADY_EXIST_SUBJECT_EXCEPTION(HttpStatus.CONFLICT, "이미 존재하는 제목입니다."),

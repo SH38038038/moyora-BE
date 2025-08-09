@@ -56,3 +56,7 @@ app:
     key: AbCdEfGhIjKlMnOp
 
 # elastic search : MbvO+*Kh-jpOtoa-=Oj9
+
+external:
+  fastapi:
+    url: https://e00a2a4eadbf.ngrok-free.app

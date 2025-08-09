@@ -23,5 +23,4 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiResponseTemplete<String>> handleGeneral(Exception ex) {
         return ApiResponseTemplete.error(ErrorCode.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
-    // 다른 예외들도 추가로 처리 가능
 }

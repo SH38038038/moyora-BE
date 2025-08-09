@@ -8,7 +8,7 @@
 <h2>채팅 대시보드</h2>
 
 <div>
-    <textarea id="chatLog" cols="60" rows="15" readonly style="overflow-y: scroll;"></textarea><br />
+    <textarea id="chatLog" cols="60" rows="15" readonly></textarea><br />
     <input type="text" id="messageInput" placeholder="메시지를 입력하세요" size="50" />
     <button onclick="sendMessage()">전송</button>
 </div>
@@ -30,20 +30,9 @@
         throw new Error("채팅방 ID가 없습니다.");
     }
 
-    const PAGE_SIZE = 20;
-    let lastMessageId = null;  // 커서 역할, null이면 최신부터 불러오기
-    let isLoading = false;      // 중복 호출 방지
-    let noMoreMessages = false; // 더 이상 불러올 메시지 없음
-
-    // 기존 메시지 불러오기 (페이징, 무한 스크롤용)
+    // 기존 메시지 불러오기
     function loadChatHistory() {
-        if (isLoading || noMoreMessages) return;
-        isLoading = true;
-
-        let url = `/chatroom/${roomId}/messages/page?size=${PAGE_SIZE}`;
-        if (lastMessageId) url += `&lastMessageId=${lastMessageId}`;
-
-        fetch(url, {
+        fetch(`/chatroom/${roomId}/messages`, {
             headers: { 'Authorization': 'Bearer ' + token }
         })
         .then(res => {
@@ -51,55 +40,11 @@
             return res.json();
         })
         .then(messages => {
-            if (messages.length === 0) {
-                noMoreMessages = true;
-                console.log("더 이상 불러올 메시지가 없습니다.");
-                return;
-            }
-
-            // 메시지를 id 오름차순으로 정렬 (과거→최신)
-            messages.sort((a, b) => a.id - b.id);
-
-            // 메시지들을 기존 텍스트박스 위에 붙이기 (prepend)
-            messages.forEach(msg => prependLog(`${msg.sender}: ${msg.content}`));
-
-            // 가장 오래된 메시지 id를 커서로 저장 (첫번째 메시지 id)
-            lastMessageId = messages[0].id;
-
-            // 스크롤 위치 유지 위해 약간 아래로 이동 (부드럽게)
-            const chatLog = document.getElementById("chatLog");
-            if (messages.length > 0) {
-                // 새 메시지가 위에 추가되니, 스크롤 위치를 메시지 높이만큼 내려준다
-                // 근사치로 20px * 메시지 수 정도
-                chatLog.scrollTop = 20 * messages.length;
-            }
+            messages.forEach(msg => appendLog(`${msg.sender}: ${msg.content}`));
         })
-        .catch(err => console.error("기존 메시지 로딩 오류:", err))
-        .finally(() => isLoading = false);
+        .catch(err => console.error("기존 메시지 로딩 오류:", err));
     }
 
-    // 메시지를 텍스트박스 맨 위에 추가 (prepend)
-    function prependLog(text) {
-        const chatLog = document.getElementById("chatLog");
-        chatLog.value = text + "\n" + chatLog.value;
-    }
-
-    // 메시지를 텍스트박스 맨 아래에 추가 (새 메시지 수신용)
-    function appendLog(text) {
-        const chatLog = document.getElementById("chatLog");
-        chatLog.value += text + "\n";
-        chatLog.scrollTop = chatLog.scrollHeight;
-    }
-
-    // 텍스트박스 스크롤 이벤트: 최상단 도달 시 이전 메시지 불러오기
-    const chatLog = document.getElementById("chatLog");
-    chatLog.addEventListener("scroll", () => {
-        if (chatLog.scrollTop === 0) {
-            loadChatHistory();
-        }
-    });
-
-    // WebSocket 연결
     const socket = new SockJS("http://localhost:8080/ws-chat");
     const stompClient = Stomp.over(socket);
 
@@ -109,7 +54,7 @@
             console.log("Connected: " + frame);
             appendLog("서버에 연결되었습니다.");
 
-            loadChatHistory();  // 최초 메시지 로드
+            loadChatHistory();
 
             stompClient.subscribe(`/topic/chatroom/${roomId}`, message => {
                 const msg = JSON.parse(message.body);
@@ -122,7 +67,6 @@
         }
     );
 
-    // 메시지 전송 함수
     function sendMessage() {
         const input = document.getElementById("messageInput");
         const content = input.value.trim();
@@ -135,6 +79,12 @@
         );
 
         input.value = "";
+    }
+
+    function appendLog(text) {
+        const chatLog = document.getElementById("chatLog");
+        chatLog.value += text + "\n";
+        chatLog.scrollTop = chatLog.scrollHeight;
     }
 </script>
 </body>

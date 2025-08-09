@@ -66,6 +66,9 @@ public class Board {
     @Column(name = "meet_detail")
     private String meetDetail;
 
+    @Column(name = "recommended_search_keyword")
+    private String recommendedSearchKeyword;
+
     private LocalDateTime createdTime;
     private LocalDateTime updateTime;
 

@@ -10,6 +10,7 @@ import com.project.moyora.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -73,6 +74,7 @@ public class ApplicationService {
     }
 
     // 2. 게시글 별 신청 상태 변경
+    @Transactional
     public void updateApplicationStatus(Long boardId, Long applicationId, ApplicationStatus status, CustomUserDetails requester) {
         // 게시글 조회
         Board board = boardRepository.findById(boardId)

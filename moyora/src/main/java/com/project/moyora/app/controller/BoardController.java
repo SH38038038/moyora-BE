@@ -6,18 +6,21 @@ import com.project.moyora.app.service.ApplicationService;
 import com.project.moyora.app.service.BoardSearchService;
 import com.project.moyora.app.service.BoardService;
 import com.project.moyora.app.service.ChatRoomService;
+import com.project.moyora.global.config.AppConfig;
 import com.project.moyora.global.exception.SuccessCode;
 import com.project.moyora.global.exception.model.ApiResponseTemplete;
 import com.project.moyora.global.security.CustomUserDetails;
 import com.project.moyora.global.tag.InterestTag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.elasticsearch.core.SearchHits;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -32,6 +35,9 @@ public class BoardController {
     private final ApplicationService applicationService;
     private final ChatRoomService chatRoomService;
     private final BoardSearchService boardSearchService;
+
+    @Value("${external.fastapi.url}")
+    private String fastApiUrl;
 
     // ✅ 모집글 생성
     @PostMapping
@@ -100,12 +106,29 @@ public class BoardController {
         boardService.confirmBoard(boardId, user);
         boardService.lockParticipantsAfterNoticeCreation(boardId);
 
-        BoardDto boardDto = boardService.getBoardById(boardId, user); // 수정된 호출
-        ChatRoom chatRoom = chatRoomService.createRoomForLockedBoard(boardService.getBoardEntityById(boardId)); // BoardDto에서 Board로 변환
+        BoardDto boardDto = boardService.getBoardById(boardId, user);
+        ChatRoom chatRoom = chatRoomService.createRoomForLockedBoard(boardService.getBoardEntityById(boardId));
 
-        String roomUrl = "/chatroom/" + chatRoom.getId(); // 채팅방 주소
+        if (boardDto.getMeetType() == MeetType.OFFLINE) {
+            RestTemplate restTemplate = new RestTemplate();
+
+            // 👉 FastAPI 요청
+            RecommendPlaceRequest request = new RecommendPlaceRequest(boardDto.getTitle(), boardDto.getMeetDetail(), boardDto.getContent());
+            RecommendPlaceResponse response = restTemplate.postForObject(
+                    fastApiUrl + "/recommend-place-tag", // yml에서 주입받을 변수 사용
+                    request,
+                    RecommendPlaceResponse.class
+            );
+
+            if (response != null && response.getRecommended_query() != null) {
+                boardService.saveRecommendedSearchKeyword(boardId, response.getRecommended_query());
+            }
+        }
+
+        String roomUrl = "/chatroom/" + chatRoom.getId();
         return ApiResponseTemplete.success(SuccessCode.UPDATE_POST_SUCCESS, roomUrl);
     }
+
 
     // ✅ 모집 신청 현황
     @GetMapping("/{boardId}/applications")
@@ -124,8 +147,7 @@ public class BoardController {
     @GetMapping("/search")
     public ResponseEntity<List<BoardListDto>> searchBoards(
             BoardSearchRequest request,
-            @AuthenticationPrincipal CustomUserDetails userDetails,
-            Pageable pageable
+            @AuthenticationPrincipal CustomUserDetails userDetails
     ) {
         User currentUser = userDetails.getUser();
 
@@ -133,24 +155,15 @@ public class BoardController {
                 request.getTitle(),
                 request.getMeetType(),
                 request.getInterestTag(),
-                pageable
+                currentUser.getAge(),
+                currentUser.getGender(),
+                request.getPage(),
+                request.getSize()
         );
 
         List<BoardListDto> results = searchHits.getSearchHits().stream()
                 .map(hit -> {
                     BoardDocument doc = hit.getContent();
-
-                    int userAge = currentUser.getAge();
-                    GenderType userGender = currentUser.getGender();
-
-                    if (doc.isConfirmed()) return null;
-                    if (doc.getMinAge() != null && userAge < doc.getMinAge()) return null;
-                    if (doc.getMaxAge() != null && userAge > doc.getMaxAge()) return null;
-                    if (doc.getGenderType() != null &&
-                            doc.getGenderType() != GenderType.OTHER &&
-                            doc.getGenderType() != userGender) return null;
-
-                    DateTimeFormatter formatter = DateTimeFormatter.ISO_LOCAL_DATE;
 
                     return BoardListDto.builder()
                             .detailId(doc.getId())
@@ -164,11 +177,11 @@ public class BoardController {
                             .confirmed(doc.isConfirmed())
                             .build();
                 })
-                .filter(dto -> dto != null)
                 .toList();
 
         return ResponseEntity.ok(results);
     }
+
 
     private List<TagDto> convertTags(List<InterestTag> tags) {
         if (tags == null) return List.of();
@@ -176,5 +189,6 @@ public class BoardController {
                 .map(TagDto::from)
                 .toList();
     }
+
 }
 

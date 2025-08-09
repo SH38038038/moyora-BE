@@ -7,11 +7,13 @@ import lombok.Setter;
 
 import java.util.List;
 
-@Getter
-@Setter
+@Getter @Setter
 public class BoardSearchRequest {
-    private String title; // 키워드 검색 : 필수
-    private List<InterestTag> interestTag; // 관심사 태그 : 선택
-    private MeetType meetType; // 온라인/오프라인 : 선택
-    private String meetDetail; // 상세 만남 방식 : 선택
+    private String title;
+    private List<InterestTag> interestTag;
+    private MeetType meetType;
+    private String meetDetail;
+
+    private int page = 0;
+    private int size = 10;
 }

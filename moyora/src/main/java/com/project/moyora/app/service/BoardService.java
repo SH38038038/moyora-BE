@@ -3,6 +3,7 @@ package com.project.moyora.app.service;
 import com.project.moyora.app.dto.*;
 import com.project.moyora.app.domain.*;
 import com.project.moyora.app.repository.*;
+import com.project.moyora.global.exception.CoreApiException;
 import com.project.moyora.global.exception.ErrorCode;
 import com.project.moyora.global.exception.ResourceNotFoundException;
 import com.project.moyora.global.exception.model.CustomException;
@@ -10,6 +11,7 @@ import com.project.moyora.global.tag.InterestTag;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -27,6 +29,10 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 public class BoardService {
+
+    @Value("${external.fastapi.url}")
+    private String fastApiUrl;
+
 
     private final BoardRepository boardRepository;
     private final LikeRepository likeRepository;
@@ -156,7 +162,7 @@ public class BoardService {
 
             HttpEntity<Map<String, String>> request = new HttpEntity<>(requestBody, headers);
 
-            String pythonUrl = "https://a533f9c5e423.ngrok-free.app/tagging";
+            String pythonUrl = fastApiUrl + "/tagging";
             ResponseEntity<SubTagResponse> response = restTemplate.postForEntity(
                     pythonUrl, request, SubTagResponse.class);
 
@@ -167,6 +173,14 @@ public class BoardService {
             log.error("파이썬 서버 태그 추출 실패", e);
         }
         return Collections.emptyList(); // 실패 시 빈 리스트
+    }
+
+    public void saveRecommendedSearchKeyword(Long boardId, String keyword) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new CoreApiException(ErrorCode.RESOURCE_NOT_FOUND));
+
+        board.setRecommendedSearchKeyword(keyword); // Board 엔티티에 필드 있어야 함
+        boardRepository.save(board);
     }
 
 

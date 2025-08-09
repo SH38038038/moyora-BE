@@ -2,18 +2,22 @@
   "mappings": {
     "properties": {
       "id": { "type": "long" },
-      "writerId": { "type": "long" },
       "title": {
         "type": "text",
-        "analyzer": "korean_ngram_analyzer"
+        "analyzer": "korean_standard_analyzer"
+      },
+      "title_autocomplete": {
+        "type": "text",
+        "analyzer": "korean_edge_ngram_analyzer",
+        "search_analyzer": "korean_standard_analyzer"
       },
       "content": {
         "type": "text",
-        "analyzer": "korean_ngram_analyzer"
+        "analyzer": "korean_standard_analyzer"
       },
       "meetDetail": {
         "type": "text",
-        "analyzer": "korean_ngram_analyzer"
+        "analyzer": "korean_standard_analyzer"
       },
       "genderType": { "type": "keyword" },
       "minAge": { "type": "integer" },
