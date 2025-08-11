@@ -3,8 +3,11 @@ package com.project.moyora.app.service;
 
 import com.project.moyora.app.domain.GenderType;
 import com.project.moyora.app.domain.RoleType;
+import com.project.moyora.app.domain.SuspensionPeriod;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.app.repository.UserRepository;
+import com.project.moyora.global.exception.ErrorCode;
+import com.project.moyora.global.exception.model.CustomException;
 import com.project.moyora.global.security.TokenService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -87,6 +91,14 @@ public class KakaoOAuthService {
                         .roleType(RoleType.USER)
                         .verified(false)
                         .build()));
+
+        // 영구 정지 여부 체크 (여기서 로그인 차단 처리)
+        LocalDateTime now = LocalDateTime.now();
+        if (user.getSuspendedUntil() != null && user.getSuspendedUntil().isAfter(now)) {
+            if (user.getSuspensionPeriod() == SuspensionPeriod.PERMANENT) {
+                throw new CustomException(ErrorCode.USER_SUSPENDED, "영구 정지된 사용자입니다. 로그인할 수 없습니다.");
+            }
+        }
 
         // 토큰 발급
         String accessToken = tokenService.createAccessToken(user);

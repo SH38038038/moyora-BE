@@ -32,4 +32,5 @@ public interface ChatRoomRepository extends JpaRepository<ChatRoom, Long> {
             @Param("lastMessageId") Long lastMessageId,
             Pageable pageable
     );
+    Optional<ChatRoom> findByBoardId(Long boardId);
 }

@@ -41,4 +41,10 @@ public class ChatRoomService {
 
         return chatRoomRepository.save(room);
     }
+
+    public void deleteChatRoomByBoardId(Long boardId) {
+        Optional<ChatRoom> chatRoomOptional = chatRoomRepository.findByBoardId(boardId);
+        chatRoomOptional.ifPresent(chatRoomRepository::delete);
+    }
+
 }

@@ -23,7 +23,7 @@ public class ApplicationService {
     private final BoardApplicationRepository applicationRepository;
     private final BoardRepository boardRepository;
     private final UserSubTagRepository userSubTagRepository;  // 추가 필요
-
+    private final NotificationService notificationService;
 
     // 1. 신청 처리 (WAITING 상태로)
     public ApplicationDto applyForBoard(Long boardId, CustomUserDetails currentUser) {
@@ -70,6 +70,13 @@ public class ApplicationService {
 
         applicationRepository.save(application);
 
+        // 모임 작성자에게 신청 알림
+        notificationService.sendNotification(
+                board.getWriter().getId(),
+                NotificationType.WAITING,
+                currentUser.getName() + "님이 '" + board.getTitle() + "' 모임에 신청했습니다."
+        );
+
         return new ApplicationDto(board.getId(), currentUser.getName(), ApplicationStatus.WAITING);
     }
 
@@ -108,10 +115,24 @@ public class ApplicationService {
                 if (board.getParticipation() >= board.getHowMany()) {
                     throw new IllegalStateException("모집 인원을 초과할 수 없습니다.");
                 }
-
                 // 참여 인원 증가
                 board.setParticipation(board.getParticipation() + 1);
                 boardRepository.save(board);
+            }
+
+            // ✅ 작성자가 신청 상태를 변경했으니, 신청자에게 알림
+            if (status == ApplicationStatus.ACCEPTED) {
+                notificationService.sendNotification(
+                        application.getApplicant().getId(),
+                        NotificationType.ACCEPTED,
+                        "'" + board.getTitle() + "' 모임 신청이 수락되었습니다."
+                );
+            } else if (status == ApplicationStatus.REJECTED) {
+                notificationService.sendNotification(
+                        application.getApplicant().getId(),
+                        NotificationType.REJECTED,
+                        "'" + board.getTitle() + "' 모임 신청이 거절되었습니다."
+                );
             }
 
         } else if (application.getApplicant().getId().equals(requesterId)) {
@@ -119,13 +140,20 @@ public class ApplicationService {
             if (status != ApplicationStatus.WAITING && status != ApplicationStatus.CANCELED) {
                 throw new IllegalArgumentException("신청자는 대기 상태로 변경하거나 취소만 할 수 있습니다.");
             }
-
             if (currentStatus == ApplicationStatus.CANCELED && status != ApplicationStatus.CANCELED) {
                 throw new IllegalStateException("CANCELED 상태인 신청은 다시 변경할 수 없습니다.");
             }
 
+            // (선택) 신청자가 상태를 취소로 변경하면 방장에게 알림
+            if (status == ApplicationStatus.CANCELED) {
+                notificationService.sendNotification(
+                        board.getWriter().getId(),
+                        NotificationType.CANCELED, // 또는 새로운 타입 CANCEL_NOTIFICATION
+                        application.getApplicant().getName() + "님이 '" + board.getTitle() + "' 모임 신청을 취소했습니다."
+                );
+            }
+
         } else {
-            // 작성자도 신청자도 아닌 경우
             throw new AccessDeniedException("본인만 상태를 변경할 수 있습니다.");
         }
 
@@ -143,33 +171,29 @@ public class ApplicationService {
         applicationRepository.save(application);
 
         // ------------------------------
-        // 확정 상태로 변경되었을 때 (ACCEPTED 또는 LOCKED), 이전 상태가 확정 상태가 아니면 UserSubTag 저장
+        // 확정 상태로 변경되었을 때 UserSubTag 저장
         if ((status == ApplicationStatus.ACCEPTED || status == ApplicationStatus.LOCKED) &&
                 (currentStatus != ApplicationStatus.ACCEPTED && currentStatus != ApplicationStatus.LOCKED)) {
 
             List<SubTag> subTags = board.getSubTags();
-
             for (SubTag subTag : subTags) {
                 boolean exists = userSubTagRepository.existsByUserAndSubTag(requester.getUser(), subTag);
                 if (!exists) {
                     UserSubTag ust = UserSubTag.builder()
                             .user(requester.getUser())
                             .subTag(subTag)
-                            .category(Category.PARTICIPATING)  // 예: 참여중인 태그 구분용 enum
+                            .category(Category.PARTICIPATING)
                             .build();
                     userSubTagRepository.save(ust);
                 }
             }
         }
 
-        // 상태가 확정(ACCEPTED, LOCKED)에서 취소 또는 거절(REJECTED, CANCELED)로 변경되면 UserSubTag 삭제
+        // 확정에서 취소/거절로 변경되면 UserSubTag 삭제
         if ((currentStatus == ApplicationStatus.ACCEPTED || currentStatus == ApplicationStatus.LOCKED) &&
                 (status == ApplicationStatus.REJECTED || status == ApplicationStatus.CANCELED)) {
-
-            // 해당 유저가 참여중인 태그 삭제 (삭제 방식은 설계에 따라 다름)
             userSubTagRepository.deleteByUserAndCategory(requester.getUser(), Category.PARTICIPATING);
         }
-
     }
 
 

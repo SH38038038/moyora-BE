@@ -40,48 +40,9 @@ public class BoardService {
     private final ReportRepository reportRepository;
     private final BoardSearchService boardSearchService;
     private final UserSubTagRepository userSubTagRepository;
-/*
-    public BoardDto createBoard(BoardDto dto, User currentUser) {
-        if (!Boolean.TRUE.equals(currentUser.getVerified())) {
-            throw new AccessDeniedException("인증된 사용자만 글을 작성할 수 있습니다.");
-        }
-
-        Board board = Board.builder()
-                .title(dto.getTitle())
-                .content(dto.getContent())
-                .startDate(dto.getStartDate())
-                .endDate(dto.getEndDate())
-                .howMany(dto.getHowMany())
-                .participation(0)
-                .meetType(dto.getMeetType())
-                .meetDetail(dto.getMeetDetail())
-                .genderType(dto.getGenderType())
-                .minAge(dto.getMinAge())
-                .maxAge(dto.getMaxAge())
-                .tags(dto.getTags().stream()
-                        .map(tagDto -> InterestTag.fromName(tagDto.getName())
-                                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 태그입니다: " + tagDto.getName())))
-                        .collect(Collectors.toList()))
-
-                .writer(currentUser)
-                .createdTime(LocalDateTime.now())
-                .updateTime(LocalDateTime.now())
-                .build();
-
-        Board savedBoard = boardRepository.save(board);
-
-        BoardApplication application = BoardApplication.builder()
-                .board(savedBoard)
-                .applicant(currentUser)
-                .status(ApplicationStatus.LOCKED)
-                .build();
-        boardApplicationRepository.save(application);
-
-        boardSearchService.indexBoard(board); // elastic search 연동
-
-        return new BoardDto(savedBoard, application);  // ✅ userStatus 포함
-    }
-*/
+    private final ApplicationRepository applicationRepository;
+    private final NotificationService notificationService;
+    private final ChatRoomService chatRoomService;
 
     public BoardDto createBoard(BoardDto dto, User currentUser, List<String> subTagNames) {
         if (!Boolean.TRUE.equals(currentUser.getVerified())) {
@@ -239,6 +200,26 @@ public class BoardService {
 
         board.setConfirmed(true);  // 확정 상태로 설정
         boardRepository.save(board);
+
+        // LOCKED 제외 신청 기록 삭제
+        List<BoardApplication> allApplications = boardApplicationRepository.findByBoard(board);
+        for (BoardApplication application : allApplications) {
+            if (application.getStatus() != ApplicationStatus.LOCKED) {
+                boardApplicationRepository.delete(application);
+            }
+        }
+
+        // 알림
+        List<User> participants = applicationRepository.findAcceptedApplicantsByBoardId(boardId);
+        for (User p : participants) {
+            notificationService.sendNotification(
+                    p.getId(),
+                    NotificationType.CONFIRMED,
+                    "'" + board.getTitle() + "' 모임이 확정되었습니다."
+            );
+        }
+
+
     }
 
     @Transactional
@@ -486,5 +467,26 @@ public class BoardService {
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND, null));
     }
 
+    @Scheduled(cron = "0 0 0 * * *")  // 매일 자정 실행
+    @Transactional
+    public void deleteBoardsAfterOneWeekFromEndDate() {
+        LocalDateTime now = LocalDateTime.now();
 
+        // 삭제 대상 게시글 조회: endDate + 7일 < now
+        List<Board> boardsToDelete = boardRepository.findAllByEndDateBefore(now.minusDays(7).toLocalDate());
+        for (Board board : boardsToDelete) {
+            try {
+                Long boardId = board.getId();
+
+                // 1. 게시글 삭제
+                boardRepository.delete(board);
+
+                // 2. 채팅방 삭제 (예: boardId를 기준으로 채팅방 찾고 삭제)
+                chatRoomService.deleteChatRoomByBoardId(boardId);
+                log.info("게시글 {} 및 관련 채팅방 삭제 완료", boardId);
+            } catch (Exception e) {
+                log.error("게시글 삭제 중 오류 발생: boardId={}", board.getId(), e);
+            }
+        }
+    }
 }

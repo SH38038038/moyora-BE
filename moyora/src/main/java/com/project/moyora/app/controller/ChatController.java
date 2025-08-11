@@ -1,16 +1,14 @@
 package com.project.moyora.app.controller;
 
-import com.project.moyora.app.domain.ChatParticipant;
+import com.project.moyora.app.domain.*;
 import com.project.moyora.app.dto.ChatMessageDto;
-import com.project.moyora.app.domain.ChatMessage;
-import com.project.moyora.app.domain.ChatRoom;
-import com.project.moyora.app.domain.User;
 import com.project.moyora.app.dto.ChatRoomDto;
 import com.project.moyora.app.repository.ChatMessageRepository;
 import com.project.moyora.app.repository.ChatParticipantRepository;
 import com.project.moyora.app.repository.ChatRoomRepository;
 import com.project.moyora.app.repository.UserRepository;
 import com.project.moyora.app.service.ChatService;
+import com.project.moyora.app.service.NotificationService;
 import com.project.moyora.global.exception.ErrorCode;
 import com.project.moyora.global.exception.model.CustomException;
 import com.project.moyora.global.security.CustomUserDetails;
@@ -43,6 +41,7 @@ public class ChatController {
     private final UserRepository userRepository;
     private final ChatParticipantRepository chatParticipantRepository;
     private final ChatService chatService;
+    private final NotificationService notificationService;
 
     @MessageMapping("/chat.send")
     public void sendMessage(ChatMessageDto messageDto, Principal principal) {
@@ -82,6 +81,17 @@ public class ChatController {
         sendDto.setId(msg.getId());  // 저장된 메시지의 ID를 반환
 
         messagingTemplate.convertAndSend("/topic/chatroom/" + room.getId(), sendDto);
+
+        List<ChatParticipant> participants = chatParticipantRepository.findAllByChatRoomId(room.getId());
+        for (ChatParticipant participant : participants) {
+            if (!participant.getUser().getId().equals(sender.getId())) {
+                notificationService.sendNotification(
+                        participant.getUser().getId(),
+                        NotificationType.CHAT_MESSAGE,
+                        "'" + room.getName() + "' 채팅방에 새 메시지가 도착했습니다."
+                );
+            }
+        }
     }
 
     @GetMapping("/chatroom/{roomId}")

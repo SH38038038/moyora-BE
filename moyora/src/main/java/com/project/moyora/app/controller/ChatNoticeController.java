@@ -1,12 +1,13 @@
 package com.project.moyora.app.controller;
 
-import com.project.moyora.app.domain.ChatMessage;
-import com.project.moyora.app.domain.ChatNoticeComment;
-import com.project.moyora.app.domain.ChatRoom;
+import com.project.moyora.app.domain.*;
 import com.project.moyora.app.dto.ChatNoticeCommentDto;
 import com.project.moyora.app.dto.ChatNoticeDto;
+import com.project.moyora.app.dto.Notification;
 import com.project.moyora.app.repository.*;
 import com.project.moyora.app.service.ChatNoticeService;
+import com.project.moyora.app.service.ChatRoomService;
+import com.project.moyora.app.service.NotificationService;
 import com.project.moyora.global.exception.ErrorCode;
 import com.project.moyora.global.exception.model.CustomException;
 import com.project.moyora.global.security.CustomUserDetails;
@@ -28,7 +29,8 @@ public class ChatNoticeController {
     private final ChatMessageRepository chatMessageRepository;
     private final ChatNoticeCommentRepository chatNoticeCommentRepository;
     private final ChatNoticeLikeRepository chatNoticeLikeRepository;
-
+    private final NotificationService notificationService;
+    private final ChatRoomService chatRoomService;
     private final UserRepository userRepository;
 
     // 1. 공지 설정

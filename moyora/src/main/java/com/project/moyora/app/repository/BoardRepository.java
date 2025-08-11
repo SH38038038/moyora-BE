@@ -12,6 +12,7 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Set;
 
@@ -74,5 +75,7 @@ public interface BoardRepository extends JpaRepository<Board, Long>, JpaSpecific
             @Param("userId") Long userId,
             Pageable pageable);
 
+
+    List<Board> findAllByEndDateBefore(LocalDate date);
 }
 

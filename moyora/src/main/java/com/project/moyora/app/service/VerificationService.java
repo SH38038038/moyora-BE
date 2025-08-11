@@ -1,5 +1,6 @@
 package com.project.moyora.app.service;
 
+import com.project.moyora.app.domain.NotificationType;
 import com.project.moyora.app.dto.VerificationResponse;
 import com.project.moyora.app.domain.User;
 import com.project.moyora.app.domain.Verification;
@@ -25,6 +26,7 @@ public class VerificationService {
     private UserRepository userRepository;
 
     private final EncryptionUtil encryptionUtil;
+    private final NotificationService notificationService;
 
     // 인증 요청 리스트 조회 (PENDING 상태만)
     @Transactional
@@ -72,6 +74,12 @@ public class VerificationService {
         // 4. Verification, User 업데이트
         verificationRepository.save(verification);  // Verification 상태 저장
         userRepository.save(user);  // User의 verified 필드 저장
+        // 알림 전송
+        notificationService.sendNotification(
+                user.getId(),
+                NotificationType.ID_VERIFICATION_ACCEPTED,
+                "신분증 인증이 완료되었습니다."
+        );
     }
 
     // 인증 거절
@@ -88,6 +96,12 @@ public class VerificationService {
         user.setVerificationStatus(VerificationStatus.REJECTED);
         verificationRepository.save(verification);
         userRepository.save(user);
+
+        notificationService.sendNotification(
+                user.getId(),
+                NotificationType.ID_VERIFICATION_REJECTED,
+                "신분증 인증이 거절되었습니다."
+        );
     }
 
     // 인증 요청 삭제

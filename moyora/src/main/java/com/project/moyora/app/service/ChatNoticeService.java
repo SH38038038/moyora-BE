@@ -1,10 +1,6 @@
 package com.project.moyora.app.service;
 
-import com.project.moyora.app.domain.ChatMessage;
-import com.project.moyora.app.domain.ChatNoticeComment;
-import com.project.moyora.app.domain.ChatRoom;
-import com.project.moyora.app.domain.ChatNoticeLike;
-import com.project.moyora.app.domain.User;
+import com.project.moyora.app.domain.*;
 import com.project.moyora.app.repository.*;
 import com.project.moyora.global.exception.ErrorCode;
 import com.project.moyora.global.exception.model.CustomException;
@@ -13,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -24,6 +21,8 @@ public class ChatNoticeService {
     private final ChatNoticeLikeRepository chatNoticeLikeRepository;
     private final UserRepository userRepository;
     private final ChatRoomRepository chatRoomRepository;
+    private final ChatParticipantRepository chatParticipantRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public void setChatNotice(Long chatRoomId, Long messageId) {
@@ -45,6 +44,17 @@ public class ChatNoticeService {
 
         message.setNotice(true);
         chatMessageRepository.save(message);
+
+        List<ChatParticipant> participants =
+                chatParticipantRepository.findAllByChatRoomId(chatRoomId);
+
+        for (ChatParticipant participant : participants) {
+            notificationService.sendNotification(
+                    participant.getUser().getId(),
+                    NotificationType.CHAT_NOTICE,
+                    "'" + chatRoom.getName() + "' 채팅방에 새로운 공지가 등록되었습니다."
+            );
+        }
     }
 
     @Transactional

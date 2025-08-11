@@ -22,4 +22,9 @@ public interface ApplicationRepository extends JpaRepository<BoardApplication, L
     List<BoardApplication> findByApplicant(User applicant);
 
     Optional<BoardApplication> findByBoardAndApplicant(Board board, User applicant);
+
+    @Query("SELECT a.applicant FROM BoardApplication a " +
+            "WHERE a.board.id = :boardId AND a.status = 'ACCEPTED'")
+    List<User> findAcceptedApplicantsByBoardId(@Param("boardId") Long boardId);
+
 }

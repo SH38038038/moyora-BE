@@ -9,6 +9,8 @@ import com.project.moyora.app.repository.UserRepository;
 import com.project.moyora.global.security.CustomUserDetails;
 import lombok.RequiredArgsConstructor;
 import java.util.stream.Collectors;
+
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +24,7 @@ public class ReportService {
     private final ReportRepository reportRepository;
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
+    private final NotificationService notificationService;
 
     public void reportBoard(Long boardId, String reason, CustomUserDetails reporterDetails) {
         User reporter = reporterDetails.getUser();
@@ -59,11 +62,6 @@ public class ReportService {
             throw new IllegalStateException("이미 이 사용자에 대해 처리 대기 중인 신고가 있습니다.");
         }
 
-/*
-        if (reportRepository.existsByReporterAndReportedUser(reporter, reported)) {
-            throw new IllegalArgumentException("이미 신고한 사용자입니다.");
-        }
-*/
         Report report = new Report();
         report.setReporter(reporter);
         report.setReportedUser(reported);
@@ -118,11 +116,17 @@ public class ReportService {
         }
 
         report.setStatus(request.getStatus());
+        Board board = report.getReportedBoard();
 
         if (request.getStatus() == ReportStatus.ACCEPTED) {
-            Board board = report.getReportedBoard();
             boardRepository.delete(board); // 게시글 삭제
         }
+
+        notificationService.sendNotification(
+                board.getWriter().getId(),
+                NotificationType.REPORT_RESULT,
+                "당신의 게시글 '" + board.getTitle() + "'이(가) " + request.getStatus().name() + " 처리되었습니다."
+        );
     }
 
     @Transactional
@@ -146,7 +150,26 @@ public class ReportService {
         reportedUser.setSuspendedUntil(until);
         reportedUser.setSuspensionPeriod(period);
         report.setStatus(ReportStatus.ACCEPTED);
+
+        notificationService.sendNotification(
+                reportedUser.getId(),
+                NotificationType.SUSPENSION,
+                "당신은 '" + period.name() + "' 동안 활동이 제한됩니다."
+        );
     }
+
+    public void checkUserWritePermission(User user) {
+        LocalDateTime now = LocalDateTime.now();
+        if (user.getSuspendedUntil() != null && user.getSuspendedUntil().isAfter(now)) {
+            SuspensionPeriod period = user.getSuspensionPeriod();
+            if (period == SuspensionPeriod.SUSPENDED_3DAYS ||
+                    period == SuspensionPeriod.SUSPENDED_7DAYS ||
+                    period == SuspensionPeriod.SUSPENDED_1MONTH) {
+                throw new AccessDeniedException("현재 쓰기 기능이 제한된 상태입니다.");
+            }
+        }
+    }
+
 
 }
 
