@@ -43,6 +43,7 @@ public class BoardService {
     private final ApplicationRepository applicationRepository;
     private final NotificationService notificationService;
     private final ChatRoomService chatRoomService;
+    private final SubTagRepository subTagRepository;
 
     public BoardDto createBoard(BoardDto dto, User currentUser, List<String> subTagNames) {
         if (!Boolean.TRUE.equals(currentUser.getVerified())) {
@@ -156,7 +157,6 @@ public class BoardService {
                 .map(board -> toListDto(board, currentUser))
                 .toList();
     }
-
 
 
     @Transactional(readOnly = true)
@@ -365,9 +365,6 @@ public class BoardService {
     }
 
 
-
-
-
     private Board toEntity(BoardDto dto) {
         return Board.builder()
                 .title(dto.getTitle())
@@ -427,7 +424,8 @@ public class BoardService {
         }
     }
 
-    @Scheduled(cron = "0 0 0 * * *") // 매일 자정 실행 예시
+    //@Scheduled(cron = "0 0 0 * * *") // 매일 자정 실행 예시
+    @Scheduled(cron = "0 */1 * * * *") // 1분마다 실행
     public void scheduledBoardCleanup() {
         List<Board> boards = boardRepository.findAll();
 
@@ -467,22 +465,32 @@ public class BoardService {
                 .orElseThrow(() -> new CustomException(ErrorCode.BOARD_NOT_FOUND, null));
     }
 
-    @Scheduled(cron = "0 0 0 * * *")  // 매일 자정 실행
+    //@Scheduled(cron = "0 0 0 * * *")  // 매일 자정 실행
+    @Scheduled(cron = "0 */1 * * * *") // 1분마다 실행
     @Transactional
     public void deleteBoardsAfterOneWeekFromEndDate() {
         LocalDateTime now = LocalDateTime.now();
 
-        // 삭제 대상 게시글 조회: endDate + 7일 < now
         List<Board> boardsToDelete = boardRepository.findAllByEndDateBefore(now.minusDays(7).toLocalDate());
+
         for (Board board : boardsToDelete) {
             try {
                 Long boardId = board.getId();
 
-                // 1. 게시글 삭제
+                // 1. 게시글 관련 SubTag, UserSubTag 먼저 삭제
+                List<SubTag> subTags = board.getSubTags();
+
+                for (SubTag subTag : subTags) {
+                    userSubTagRepository.deleteBySubTag(subTag);
+                }
+                subTagRepository.deleteAll(subTags);
+
+                // 2. 채팅방 먼저 삭제
+                chatRoomService.deleteChatRoomByBoardId(boardId);
+
+                // 3. 게시글 삭제
                 boardRepository.delete(board);
 
-                // 2. 채팅방 삭제 (예: boardId를 기준으로 채팅방 찾고 삭제)
-                chatRoomService.deleteChatRoomByBoardId(boardId);
                 log.info("게시글 {} 및 관련 채팅방 삭제 완료", boardId);
             } catch (Exception e) {
                 log.error("게시글 삭제 중 오류 발생: boardId={}", board.getId(), e);

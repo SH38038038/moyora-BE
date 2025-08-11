@@ -17,7 +17,8 @@ public class SuspensionReleaseService {
     private final UserRepository userRepository;
 
     @Transactional
-    @Scheduled(cron = "0 0 * * * *") // 매 시간 0분에 실행
+    //@Scheduled(cron = "0 0 * * * *") // 매 시간 0분에 실행
+    @Scheduled(cron = "0 */1 * * * *") // 1분마다 실행
     public void releaseExpiredSuspensions() {
         LocalDateTime now = LocalDateTime.now();
 

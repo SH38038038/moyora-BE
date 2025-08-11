@@ -42,9 +42,18 @@ public class ChatRoomService {
         return chatRoomRepository.save(room);
     }
 
+    @Transactional
     public void deleteChatRoomByBoardId(Long boardId) {
-        Optional<ChatRoom> chatRoomOptional = chatRoomRepository.findByBoardId(boardId);
-        chatRoomOptional.ifPresent(chatRoomRepository::delete);
+        ChatRoom chatRoom = chatRoomRepository.findByBoardId(boardId)
+                .orElse(null);
+        if (chatRoom != null) {
+            // 1. chat_message 먼저 삭제
+            chatMessageRepository.deleteByChatRoomId(chatRoom.getId());
+
+            // 2. chat_room 삭제
+            chatRoomRepository.delete(chatRoom);
+        }
     }
+
 
 }

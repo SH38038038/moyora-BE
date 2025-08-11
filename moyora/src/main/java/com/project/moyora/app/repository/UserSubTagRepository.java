@@ -33,4 +33,6 @@ public interface UserSubTagRepository extends JpaRepository<UserSubTag, Long> {
 
     Optional<UserSubTag> findByUserAndSubTagId(User user, Long subTagId);
 
+    @Transactional
+    void deleteBySubTag(SubTag subTag);
 }

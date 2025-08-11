@@ -46,10 +46,6 @@ public class Board {
     @Enumerated(EnumType.STRING)
     private List<InterestTag> tags = new ArrayList<>();
 
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SubTag> subTags = new ArrayList<>();
-
-
     @Column(columnDefinition = "TEXT")
     private String content;
 
@@ -72,11 +68,23 @@ public class Board {
     private LocalDateTime createdTime;
     private LocalDateTime updateTime;
 
+
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<SubTag> subTags = new ArrayList<>();
+
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<BoardApplication> applications = new HashSet<>();
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Like> likes = new ArrayList<>(); // 찜한 사용자 목록
+    private List<Like> likes = new ArrayList<>();
+
+    @OneToMany(mappedBy = "reportedBoard", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Report> reports = new ArrayList<>();
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<ChatRoom> chatRooms = new ArrayList<>();
+
 
     @PrePersist
     protected void onCreate() {

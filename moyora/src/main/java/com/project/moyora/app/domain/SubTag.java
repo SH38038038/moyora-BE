@@ -3,6 +3,9 @@ package com.project.moyora.app.domain;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -20,6 +23,10 @@ public class SubTag {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id")
     private Board board;
+
+    // UserSubTag와 양방향 연관관계 추가
+    @OneToMany(mappedBy = "subTag", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<UserSubTag> userSubTags = new ArrayList<>();
 
     @Override
     public boolean equals(Object o) {

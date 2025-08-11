@@ -10,7 +10,8 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 public class Report {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String reason;
@@ -28,10 +29,10 @@ public class Report {
     private User reportedUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "reported_board_id", nullable = false)
     private Board reportedBoard;
 
     private LocalDateTime createdAt;
 
-    // Getters, Setters
 }
 
